@@ -1,0 +1,492 @@
+---
+title: "Effect of temporal sampling"
+author: "Rosalie Bruel"
+date: "03/10/2019"
+output: 
+  html_document:
+    df_print: paged
+    fig_caption: true
+    toc: yes
+    toc_depth: 3
+    toc_float: true
+    number_sections: true
+editor_options: 
+  chunk_output_type: console
+  df_print: paged
+fontsize: 11pt
+---
+
+Before running the script, define below in the function _getpath4data_ the local folder where you are storing the dataset(s). <br>
+The Lake Zurich countings were carried out as part of a study during my PhD, comparing several lakes trajectory. I still haven't published that study.
+I have an agreement with the different persons who gave me access to sequences that they will be co-author on the publication. In the case of Lake Zurich sequence, this person is Nathalie Dubois (ETH Zurich, CH). So until this is figured out, I'd rather not publish any data on my Github.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = FALSE, warning = FALSE, message = FALSE)
+
+getpath4data <- function() {
+  if(Sys.getenv("USER")=="Rosalie") return("/Volumes/-/Script R/Data-off-GitHub/temporal-sampling/")
+  if(Sys.getenv("USER")=="put here your USER") return("replace here with path to data")
+  if(Sys.getenv("USER")!="Rosalie"|Sys.getenv("USER")!="put here your USER") stop("You need to get the data and define their location.")
+}
+
+fig_cap <- captioner::captioner()
+tab_cap <- captioner::captioner("Table")
+```
+
+# Lake Zurich
+
+```{r read zurich data, include=T}
+zh <- read.delim(paste0(getpath4data(),"ZH17_21_clado.txt"))
+```
+
+## Study site
+Lake Zürich (CH) has a surface area of 65 km<sup>2</sup> and a maximum depth of 136 meters. The lake is divided into two basins. The lake is considered to be monomictic or dimictic, but the increase of strength of thermal stratification in the last few decades as a consequence of climate warming impedes complete mixing of the water column (Anneville et al., 2004^[Anneville, O., Souissi, S., Gammeter, S., Straile, D., 2004. Seasonal and inter-annual scales of variability in phytoplankton assemblages: comparison of phytoplankton dynamics in three peri-alpine lakes over a period of 28 years. Freshwater Biology 49, 98–115. https://doi.org/10.1046/j.1365-2426.2003.01167.x]).
+
+## Coring and dating
+A short core (ZH-17-21, 103 cm) was taken from the pelagic zone in 2017. Only the upper 50 cm were sampled and analysed within this study. The sediment of Lake Zurich presents a laminated facies on the surface (0-28.3 cm) that allowed varves counting. A linear interpolation allowed getting ages for the rest of the core. There was no change of sedimentation for the top 22.5-cm (1930-2017) which support the realism of such approximation. From 22.5 cm downward, the model fitted with only 3 points indicates a higher sedimentation rate.
+The sediment sequence covers the 1945-2017 period. The core was subsampled every centimetre for biological analysis (diatoms and cladocera remains).
+
+## Cladoceran community
+
+Shortly, cladoceran stratigraphy  and result of CONISS clustering.
+
+```{r coniss, include=T, echo=F}
+require(rioja)
+diss<-dist(sqrt(zh[,-c(1)]/100)^2)
+clust<-chclust(diss,method="coniss")
+par(mfrow=c(2,1))
+par(mar=c(5.1,4.1,2.1,20))
+bstick(clust, cex=0.8)
+par(mar=c(4,3.1,1.1,1.1))
+plot(clust, labels=zh[,1], cex=0.8)
+```
+`r fig_cap("coniss clustering zurich", "Selection of significant groups and constrained hierarchical clustering of Lake Zürich sequence")`
+
+```{r strat plot zurich, include=T, echo=F}
+par(mfrow=c(1,1))
+par(mar=c(5.1,4.1,2.1,20))
+clado.clust<-strat.plot(zh[,-c(1)],yvar=zh[,1],col.line="black",lwd.line=0,col.bar="black",lwd.bar=2, x.names=colnames(zh[-c(1)]), cex.xlabel=1, srt.xlabel=30,scale.minmax=FALSE, y.rev = F,clust=clust)
+addClustZone(clado.clust,clust,4,col="black")
+```
+`r fig_cap("strat plot zurich", "Stratigraphic abundance of cladoceran remains in Lake Zürich sediment core ZH17-21. (I'm aware it's impossible to read it with that many taxa, I have the same code somewhere applied to sub groups which make it way easier to read)")`
+
+```{r strat plot zurich selected sp, include=T, echo=F}
+par(mfrow=c(1,1))
+par(mar=c(5.1,4.1,2.1,20))
+clado.clust<-strat.plot(cbind(zh[,colnames(zh) %in% c("LK","SC","DL","EL","EC","BL","BYL")], rowSums(zh[,-1][,!colnames(zh) %in% c("LK","SC","DL","EL","EC","BL","BYL")])),yvar=zh[,1],col.line="black",lwd.line=0,col.bar="black",lwd.bar=2, x.names=c(colnames(zh[colnames(zh) %in% c("LK","SC","DL","EL","EC","BL","BYL")]), "others"), cex.xlabel=1, srt.xlabel=30,scale.minmax=FALSE, y.rev = F,clust=clust)
+addClustZone(clado.clust,clust,4,col="black")
+```
+`r fig_cap("strat plot zurich selected sp", "Stratigraphic abundance of dominant cladoceran remains in Lake Zürich sediment core ZH17-21. Abbreviations: BL= Bosmina longirostris, EC= Eubosmina coregoni, EL= Eubosmina longispina, DL= Daphnia spp., LK= Leptodora kindti, BYL= Bythotrephes longismanus, SC= Sida crystallina")`
+
+CONISS clustering identified four significant different cladoceran assemblages over the past 170 years. From 1845 to 1903, _Eubosmina longispina_ and the predator _Bythotrephes longismanus_ dominate the pelagic assemblage. macrophyte-associated species are present ( _Eurycercus_ sp., _Alona quandrangularis_, _Sida crystallina_) attesting for the presence of macrophytic littoral zone. From 1905 to 1908, there is a transient assemblage dominated by pelagic taxa ( _Daphnia longispina_ and _Bosmina longirostris_). The later is a small taxa, wall the usually large Daphnia longispina lose 25 μm in average at this period . This smaller assemblage is associated with a transient disappearance of predator species ( _Leptodora kindti_). This dynamic alone would require more investigation and may come from a change in the top-down pressure, if fish happened to be introduced at that time. However, I did not find any information in the English-written literature mentioning fisheries management of Lake Zurich at that time. The following period from 1911 to 1957 is characterized by a dominance of _Daphnia_ spp. and _Bosmina longirostris_ species in the pelagic compartment. The predator _B. longismanus_ and _Leptodora kindtii_ are also present. The overall abundance of littoral taxa increases, but the macrophyte-associated taxa are replaced by more ubiquitous taxa ( _Chydorus sphaericus_). The last transition took place from 1961, and characterise the recent assemblage. The overall abundance increases for almost all groups. Larger pelagic grazers returned ( _Eubosmina_ sp., larger size _Daphnia_ spp. Figure not included here, refer to thesis). Large predators share the habitat. Chydoridae taxa remained an important part of the assemblage despite eutrophication, unlike what happened in many other lakes of the study. <br>
+Boucherle & Züllig (1983)^[Boucherle, M.M., Züllig, H., 1983. Cladoceran remains as evidence of change in trophic state in three Swiss lakes. Hydrobiologia 103, 141–146. https://doi.org/10.1007/BF00028442] used the shift between assemblages dominated by Daphnia spp. and Bosmina sp. to infer the level eutrophication. Using this ratio, we are in accordance with their results and timing of water quality. The insight brought from diatoms analysis on the trophic level also corroborates a two-stages eutrophication, with an increase in water quality in the early years of World War II. Globally, Daphnia spp. group is once again (Alric et al., 2013)^[Alric, B., Möst, M., Domaizon, I., Pignol, C., Spaak, P., Perga, M.-E., 2016. Local human pressures influence gene flow in a hybridizing Daphnia species complex. J. Evol. Biol. 29, 720–735. https://doi.org/10.1111/jeb.12820] providing an early warning for eutrophication with their abundance increasing as soon as 1883. <br>
+Having said that, the identification to the specie level in the _Bosmina_ sp. group differs between their study and the present sequence. We did observe the appearance of the small _Bosmina longirostris_ group from the late 19th century, but found remains of _Eubosmina longispina_ during the 20<sup>th</sup> century as well while Boucherle & Züllig (1983) reported its total disappearance from the sediment. Overall, the results are still very similar, and the difference may come from misidentifications or updated identification keys.
+
+
+# Changepoint analysis
+
+In most paleo-reconstructions, we're interested in the changepoints in the series: when the assemblage shifted. Changepoint are detected on a single vector, so we would usually run a PCA first on the dataset.
+
+Would random sampling generate the same results as if all the samples were analyzed?
+
+We need to loop the different steps:<br>
+  1)  Which samples are going to be sampled <br>
+  2)  Run PCA on subset <br>
+  3)  Run changepoint analysis on 1<sup>st</sup> (and maybe 2<sup>nd</sup>?) component <br>
+
+
+```{r eval=FALSE, include=FALSE}
+require(vegan)
+require(ade4)
+require(changepoint)
+
+# Change here the sample size
+sample_size <- c(rep(5:40, each=3),50)
+
+output <- as.data.frame(matrix(rep(NA, 5*length(sample_size)), ncol=5))
+colnames(output) <- c("Number_samples","PC1_var","PC2_var","AMOC_PC1","AMOC_PC2")
+
+line=0
+for (i in sample_size) {
+  line=line+1
+  # 1. Sample years
+  which_samples <- sample(1:nrow(zh), size = i,replace = F)
+  which_samples <- which_samples[order(which_samples)]
+  mdata <- zh[which_samples,]
+  # reorder chronologically
+  mdata <- mdata[order(mdata[,1]),]
+  #remove rare species
+  # present less than 3 times in the assemblage
+  mdata <- mdata[,colSums(mdata>0)>3]
+  
+  # 2. Do ordination 
+  PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
+  PCAout<-dudi.pca(PCAout, scannf = FALSE)
+  #summary(PCAout)
+  
+  # 3. Run changepoints on PC1
+  cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
+  cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC1)])
+  if(length(cptmean.AMOC.PC1)==0) cptmean.AMOC.PC1 <- NA
+  
+  # 4. Run changepoints on PC2
+  cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
+  cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC2)])
+  if(length(cptmean.AMOC.PC2)==0) cptmean.AMOC.PC2 <- NA
+  
+  # Save outputs
+  output$Number_samples[line] <- i
+  output$PC1_var[line]        <- PCAout$eig[1]/sum(PCAout$eig)*100
+  output$PC2_var[line]        <- PCAout$eig[2]/sum(PCAout$eig)*100
+  output$AMOC_PC1[line]       <- cptmean.AMOC.PC1
+  output$AMOC_PC2[line]       <- cptmean.AMOC.PC2
+
+}
+output
+
+# # PELT method with AIC penalty
+# cptmean.AIC <- cpt.mean(y, method="PELT",penalty = "AIC")
+# (cptmean.AIC.date<-as.numeric(time[cpts(cptmean.AIC)]))
+# 
+# # PELT method with manual penalty (elbow method)
+# plot(0,0,xlim=c(0,20), ylim=c(0,15),col ="white", ylab="Number of changes in mean", xlab="Penalty", font=2,main="Elbow plot - choice of the penalty for changepoints analysis \nPruned Exact Linear Time (PELT) method")
+# abline(h = c(seq(from=0, to=20, by=1),15), lty=3, col=adjustcolor("black",alpha.f = 0.5))
+# abline(h=length(cptmean.AIC.date), lty=3, col="black", lwd=2)
+# for (i in seq(from = 0, to = 20, by = 0.05)) {
+#   cptmean=cpt.mean(y, method="PELT", penalty = "Manual", pen.value = i)
+#   nb <- length(cpts(cptmean))
+#   points(nb~i, pch=20)
+# }
+# legend("topright",legend = c("AIC","Manual - fluctuating penalty"), title = "Methods to chose the number of changes in mean",bty="n", pch = c(NA,20), lty=c(3,NA), lwd=c(2,NA), cex = 0.8)
+# # change the pen.value according to the elbow plot
+# cptmean.Manual <- cpt.mean(y, method="PELT",penalty = "Manual", pen.value = 20)
+# (cptmean.Manual.date<-as.numeric(time[cpts(cptmean.Manual)]))
+# 
+# # Select here the final changepoint(s) you want to keep
+# my_cpt <- (cptmean.Manual.date<-as.numeric(time[cpts(cptmean.Manual)]))
+# if(is.null(my_cpt))
+#   cat("\nWarning! No changepoints were detected. One of the condition for alternative stable state\nis an abrupt transition (see Andersen et al 2009, and our discussion in Bruel et al 2O18).\n\n")
+# if(!is.null(my_cpt)) {
+#   my_cpt <- as.data.frame(matrix(c(my_cpt,rep(NA,length(my_cpt))),ncol=2,byrow=F))
+#   for (i in 1:nrow(my_cpt)) my_cpt[i,2]=time[which(time==my_cpt[i,1])+1]
+#   # Re-arrange you my_cpt matrix
+#   my_cpt <- my_cpt[order(my_cpt[,1],decreasing = T),order(my_cpt[1,],decreasing = T)]
+# }
+
+
+```
+
+
+```{r}
+require(ggplot2)
+require(gridExtra)
+p1 <- ggplot(output, aes(Number_samples, PC1_var)) + geom_point() + stat_smooth()
+p2 <- ggplot(output, aes(Number_samples, PC2_var)) + geom_point() + stat_smooth()
+grid.arrange(p1,p2, nrow=1)
+```
+`r fig_cap("percentage explained by PCs", "Percentage explained by PC axes according to number of samples analysed")`
+
+```{r}
+p1 <- ggplot(output, aes(AMOC_PC1, Number_samples)) + geom_point() + xlim(1850,2017)
+p2 <- ggplot(output, aes(AMOC_PC2,Number_samples)) + geom_point() + xlim(1850,2017)
+grid.arrange(p1,p2, nrow=2)
+```
+`r fig_cap("timing of cpts", "Timing of changepoint")`
+
+
+# Optimizing sampling by adding closest sample to shift
+
+When analysing more or less sample is easy (e.g., counting cladoceran samples vs analyzing DNA samples), can we find an optimal sampling?
+
+Logic is a bit different, we want to know what is the minimum number of random sample we should start with, and then add samples around it to actually find the shifting point
+
+```{r}
+# Change here the sample size
+sample_size <- c(rep(13:30, each=100))
+#sample_size <- 15
+output <- as.data.frame(matrix(rep(NA, 5*length(sample_size)), ncol=5))
+colnames(output) <- c("Initial_number_samples","Initial_AMOC_PC1","Initial_AMOC_PC2","Number_needed_for_AMOC_PC1","Number_needed_for_AMOC_PC2")
+
+output <- output[,c(1,2,4)]
+
+for (i in 1:length(sample_size)) {
+  if(i == 1)  {
+    mdata <- zh[order(zh[,1]),]
+    # 2. Do ordination 
+    PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
+    PCAout<-dudi.pca(PCAout, scannf = FALSE)
+    true.eig1 <- PCAout$eig[1]/sum(PCAout$eig)*100
+    true.eig2 <- PCAout$eig[2]/sum(PCAout$eig)*100
+    
+    # 3. Run changepoints on PC1
+    true.cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
+    true.cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(true.cptmean.AMOC.PC1)])
+    if(length(true.cptmean.AMOC.PC1)==0) true.cptmean.AMOC.PC1 <- NA
+    
+    # # 4. Run changepoints on PC2
+    # true.cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
+    # true.cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(true.cptmean.AMOC.PC2)])
+    # if(length(true.cptmean.AMOC.PC2)==0) true.cptmean.AMOC.PC2 <- NA
+  
+    # Save outputs
+    c(nrow(zh), true.eig1, true.eig2,
+      true.cptmean.AMOC.PC1, true.cptmean.AMOC.PC2)
+  } 
+  # 1. Sample years
+  which_samples <- sample(2:(nrow(zh)-1), size = sample_size[i],replace = F)
+  which_samples <- c(which_samples, 1, nrow(zh))
+  which_samples <- which_samples[order(which_samples)]
+  mdata <- zh[which_samples,]
+  # reorder chronologically
+  mdata <- mdata[order(mdata[,1]),]
+  #remove rare species
+  # present less than 3 times in the assemblage
+  mdata <- mdata[,colSums(mdata>0)>3]
+  
+  # 2. Do ordination 
+  PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
+  PCAout<-dudi.pca(PCAout, scannf = FALSE)
+  
+  # 3. Run changepoints on PC1
+  cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
+  cptmean.AMOC.PC1_num <- cptmean.AMOC.PC1
+  cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC1)])
+  if(length(cptmean.AMOC.PC1)==0) cptmean.AMOC.PC1 <- NA
+  
+  # # 4. Run changepoints on PC2
+  # cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
+  # cptmean.AMOC.PC2_num <- cptmean.AMOC.PC2
+  # cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC2)])
+  # if(length(cptmean.AMOC.PC2)==0) cptmean.AMOC.PC2 <- NA
+  
+  # Save outputs
+  output$Initial_number_samples[i]     <- sample_size[i]
+  output$Initial_AMOC_PC1[i]           <- cptmean.AMOC.PC1
+  #output$Initial_AMOC_PC2[i]           <- cptmean.AMOC.PC2
+  if(abs(cptmean.AMOC.PC1-true.cptmean.AMOC.PC1) <8){
+        output$Number_needed_for_AMOC_PC1[i] <- length(which_samples)
+        numberPC1_ok = TRUE
+        } else numberPC1_ok = FALSE
+  # if(!is.na(cptmean.AMOC.PC2) & !is.na(true.cptmean.AMOC.PC2) & cptmean.AMOC.PC2==true.cptmean.AMOC.PC2) {
+  #   output$Number_needed_for_AMOC_PC2[i] <- length(which_samples) 
+  #   numberPC2_ok = TRUE
+  # } else numberPC2_ok = FALSE
+  
+  # 5. Now, how many more samples are needed to get true cptmean.AMOC.PC1?
+  for (j in 1:(nrow(zh)-sample_size[i])) {
+    if(!numberPC1_ok) {
+      h=1
+      while((which_samples[cpts(cptmean.AMOC.PC1_num)]-h) %in% which_samples & which_samples[cpts(cptmean.AMOC.PC1_num)]-h > 0) h=h+1
+      which_samples <- c(which_samples, which_samples[cpts(cptmean.AMOC.PC1_num)]-h)
+      
+      h=1
+      while((which_samples[cpts(cptmean.AMOC.PC1_num)]+h) %in% which_samples & which_samples[cpts(cptmean.AMOC.PC1_num)]+h<nrow(zh)) h=h+1
+      which_samples <- c(which_samples, which_samples[cpts(cptmean.AMOC.PC1_num)]+h)
+      
+      which_samples <- which_samples[which_samples>0 & which_samples<= nrow(zh)]
+      which_samples <- unique(which_samples)
+      
+    which_samples <- which_samples[order(which_samples)]
+    mdata <- zh[which_samples,]
+    # reorder chronologically
+    mdata <- mdata[order(mdata[,1]),]
+    
+    # 2. Do ordination 
+    PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
+    PCAout<-dudi.pca(PCAout, scannf = FALSE)
+    #summary(PCAout)
+    
+    # 3. Run changepoints on PC1
+    cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
+    cptmean.AMOC.PC1_num <- cptmean.AMOC.PC1
+    cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC1)])
+    if(length(cptmean.AMOC.PC1)==0) cptmean.AMOC.PC1 <- NA
+    
+    # # 4. Run changepoints on PC2
+    # cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
+    # cptmean.AMOC.PC2_num <- cptmean.AMOC.PC2
+    # cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC2)])
+    # if(length(cptmean.AMOC.PC2)==0) cptmean.AMOC.PC2 <- NA
+    
+    if(!is.na(cptmean.AMOC.PC1) & !is.na(true.cptmean.AMOC.PC1) & cptmean.AMOC.PC1==true.cptmean.AMOC.PC1){
+        output$Number_needed_for_AMOC_PC1[i] <- length(which_samples)
+        numberPC1_ok = TRUE
+        } else numberPC1_ok = FALSE
+    # if(!is.na(cptmean.AMOC.PC2) & !is.na(true.cptmean.AMOC.PC2) & cptmean.AMOC.PC2==true.cptmean.AMOC.PC2) {
+    #   output$Number_needed_for_AMOC_PC2[i] <- length(which_samples) 
+    #   numberPC2_ok = TRUE
+    # } else numberPC2_ok = FALSE
+  }  
+    }
+  
+}
+output$total_added <- output$Number_needed_for_AMOC_PC1-output$Initial_number_samples-2
+output
+```
+
+
+```{r}
+ggplot(output, aes(Initial_number_samples,total_added)) + geom_point(alpha=.3)
+library(dplyr)
+output2 <- output %>% 
+  group_by(Initial_number_samples) %>% 
+  summarise(total0 = sum(total_added==0))
+
+plot(output2)
+abline(h=80)
+```
+`r fig_cap("how many samples must be added to get true changepoint", "A 'biased' sampling (trying to detect the true shift by getting closest sample) is not a guarantee to reduce the total number of samples that should be analyzed to detect the true shift")`
+
+
+# Optimizing sampling by adding intermediate samples between shift and next sample analyzed
+
+```{r}
+# Change here the sample size
+sample_size <- c(rep(15:30, each=30))
+#sample_size <- 15
+output <- as.data.frame(matrix(rep(NA, 5*length(sample_size)), ncol=5))
+colnames(output) <- c("Initial_number_samples","Initial_AMOC_PC1","Initial_AMOC_PC2","Number_needed_for_AMOC_PC1","Number_needed_for_AMOC_PC2")
+
+output <- output[,c(1,2,4)]
+
+for (i in 1:length(sample_size)) {
+  if(i == 1)  {
+    mdata <- zh[order(zh[,1]),]
+    # 2. Do ordination 
+    PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
+    PCAout<-dudi.pca(PCAout, scannf = FALSE)
+    true.eig1 <- PCAout$eig[1]/sum(PCAout$eig)*100
+    true.eig2 <- PCAout$eig[2]/sum(PCAout$eig)*100
+    
+    # 3. Run changepoints on PC1
+    true.cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
+    true.cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(true.cptmean.AMOC.PC1)])
+    if(length(true.cptmean.AMOC.PC1)==0) true.cptmean.AMOC.PC1 <- NA
+    
+    # # 4. Run changepoints on PC2
+    # true.cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
+    # true.cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(true.cptmean.AMOC.PC2)])
+    # if(length(true.cptmean.AMOC.PC2)==0) true.cptmean.AMOC.PC2 <- NA
+  
+    # Save outputs
+    c(nrow(zh), true.eig1, true.eig2,
+      true.cptmean.AMOC.PC1, true.cptmean.AMOC.PC2)
+  } 
+  # 1. Sample years
+  which_samples <- sample(1:nrow(zh), size = sample_size[i],replace = F)
+  which_samples <- which_samples[order(which_samples)]
+  mdata <- zh[which_samples,]
+  # reorder chronologically
+  mdata <- mdata[order(mdata[,1]),]
+  #remove rare species
+  # present less than 3 times in the assemblage
+  mdata <- mdata[,colSums(mdata>0)>3]
+  
+  # 2. Do ordination 
+  PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
+  PCAout<-dudi.pca(PCAout, scannf = FALSE)
+  
+  # 3. Run changepoints on PC1
+  cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
+  cptmean.AMOC.PC1_num <- cptmean.AMOC.PC1
+  cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC1)])
+  if(length(cptmean.AMOC.PC1)==0) cptmean.AMOC.PC1 <- NA
+  
+  # # 4. Run changepoints on PC2
+  # cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
+  # cptmean.AMOC.PC2_num <- cptmean.AMOC.PC2
+  # cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC2)])
+  # if(length(cptmean.AMOC.PC2)==0) cptmean.AMOC.PC2 <- NA
+  
+  # Save outputs
+  output$Initial_number_samples[i]     <- sample_size[i]
+  output$Initial_AMOC_PC1[i]           <- cptmean.AMOC.PC1
+  #output$Initial_AMOC_PC2[i]           <- cptmean.AMOC.PC2
+  if(cptmean.AMOC.PC1==true.cptmean.AMOC.PC1){
+        output$Number_needed_for_AMOC_PC1[i] <- length(which_samples)
+        numberPC1_ok = TRUE
+        } else numberPC1_ok = FALSE
+  # if(!is.na(cptmean.AMOC.PC2) & !is.na(true.cptmean.AMOC.PC2) & cptmean.AMOC.PC2==true.cptmean.AMOC.PC2) {
+  #   output$Number_needed_for_AMOC_PC2[i] <- length(which_samples) 
+  #   numberPC2_ok = TRUE
+  # } else numberPC2_ok = FALSE
+  
+  # 5. Now, how many more samples are needed to get true cptmean.AMOC.PC1?
+  for (j in 1:(nrow(zh)-sample_size[i])) {
+    if(!numberPC1_ok) {
+      
+      h=0
+      max_samp <- round((which_samples[cpts(cptmean.AMOC.PC1_num)+h]+which_samples[cpts(cptmean.AMOC.PC1_num)+h+1])/2)
+      while(max_samp %in% which_samples & (cpts(cptmean.AMOC.PC1_num)+h+1)<=nrow(zh)) {
+        h=h+1
+        other_limit <- ifelse(length(which_samples[cpts(cptmean.AMOC.PC1_num)+h+1])<=nrow(zh),
+                              which_samples[cpts(cptmean.AMOC.PC1_num)+h+1],
+                              nrow(zh))
+        max_samp <- round((which_samples[cpts(cptmean.AMOC.PC1_num)+h]+which_samples[cpts(cptmean.AMOC.PC1_num)+h+1])/2)
+        }
+      
+      
+      h=0
+      min_samp <- round((which_samples[cpts(cptmean.AMOC.PC1_num)-h]+which_samples[cpts(cptmean.AMOC.PC1_num)-h-1])/2)
+      while(min_samp %in% which_samples & (cpts(cptmean.AMOC.PC1_num)-h-1)>0) {
+        h=h+1
+        other_limit <- ifelse(length(which_samples[cpts(cptmean.AMOC.PC1_num)-h-1])>0,
+                              which_samples[cpts(cptmean.AMOC.PC1_num)-h-1],
+                              1)
+        min_samp <- round((which_samples[cpts(cptmean.AMOC.PC1_num)-h]+other_limit)/2)
+      }
+      
+      
+      
+      which_samples <- c(which_samples, max_samp, min_samp)
+      which_samples <- which_samples[!is.na(which_samples)]
+      which_samples <- which_samples[which_samples>0 & which_samples<= nrow(zh)]
+      which_samples <- unique(which_samples)
+      
+    which_samples <- which_samples[order(which_samples)]
+    mdata <- zh[which_samples,]
+    # reorder chronologically
+    mdata <- mdata[order(mdata[,1]),]
+    
+    # 2. Do ordination 
+    PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
+    PCAout<-dudi.pca(PCAout, scannf = FALSE)
+    #summary(PCAout)
+    
+    # 3. Run changepoints on PC1
+    cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
+    cptmean.AMOC.PC1_num <- cptmean.AMOC.PC1
+    cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC1)])
+    if(length(cptmean.AMOC.PC1)==0) cptmean.AMOC.PC1 <- NA
+    
+    # # 4. Run changepoints on PC2
+    # cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
+    # cptmean.AMOC.PC2_num <- cptmean.AMOC.PC2
+    # cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC2)])
+    # if(length(cptmean.AMOC.PC2)==0) cptmean.AMOC.PC2 <- NA
+    
+    if(!is.na(cptmean.AMOC.PC1) & !is.na(true.cptmean.AMOC.PC1) & cptmean.AMOC.PC1==true.cptmean.AMOC.PC1){
+        output$Number_needed_for_AMOC_PC1[i] <- length(which_samples)
+        numberPC1_ok = TRUE
+        } else numberPC1_ok = FALSE
+    # if(!is.na(cptmean.AMOC.PC2) & !is.na(true.cptmean.AMOC.PC2) & cptmean.AMOC.PC2==true.cptmean.AMOC.PC2) {
+    #   output$Number_needed_for_AMOC_PC2[i] <- length(which_samples) 
+    #   numberPC2_ok = TRUE
+    # } else numberPC2_ok = FALSE
+  }  
+    }
+  
+}
+output$total_added <- output$Number_needed_for_AMOC_PC1-output$Initial_number_samples
+output
+```
+
+```{r}
+ggplot(output, aes(Initial_number_samples,total_added)) + geom_point()
+```
+`r fig_cap("how many samples must be added to get true changepoint method 2", "Adding progressively samples to fill in the gaps between transition and next/previous sample is a better strategy.")`
+
+
+# Limits
+
+A few methods looking at critical transition (e.g., Taranu et al 2018^[Taranu, Z.E., Carpenter, S.R., Frossard, V., Jenny, J.-P., Thomas, Z., Vermaire, J.C., Perga, M.-E., 2018. Can we detect ecosystem critical transitions and signals of changing resilience from paleo-ecological records? Ecosphere 9, e02438. https://doi.org/10.1002/ecs2.2438]), or increase variance (e.g., Dakos et al 2012^[Dakos, V., Carpenter, S.R., Brock, W.A., Ellison, A.M., Guttal, V., Ives, A.R., Kéfi, S., Livina, V., Seekell, D.A., van Nes, E.H., Scheffer, M., 2012. Methods for Detecting Early Warnings of Critical Transitions in Time Series Illustrated Using Simulated Ecological Data. PloS One 7, e41010. https://doi.org/10.1371/journal.pone.0041010]), etc., will value having more continuous sampling (although the online DLMs method in Taranu et al 2018 allows for non-continuous sampling).
