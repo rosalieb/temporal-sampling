@@ -16,6 +16,8 @@ editor_options:
 fontsize: 11pt
 ---
 
+**Note for next time: write function to compute the tolerance to error against sample size**
+
 Before running the script, define below in the function _getpath4data_ the local folder where you are storing the dataset(s). <br>
 The Lake Zurich countings were carried out as part of a study during my PhD, comparing several lakes trajectory. I still haven't published that study.
 I have an agreement with the different persons who gave me access to sequences that they will be co-author on the publication. In the case of Lake Zurich sequence, this person is Nathalie Dubois (ETH Zurich, CH). So until this is figured out, I'd rather not publish any data on my Github.
@@ -102,89 +104,7 @@ In most paleo-reconstructions, we're interested in the changepoints in the serie
 
 Would random sampling generate the same results as if all the samples were analyzed?
 
-We need to loop the different steps:<br>
-  1)  Which samples are going to be sampled <br>
-  2)  Run PCA on subset <br>
-  3)  Run changepoint analysis on 1<sup>st</sup> (and maybe 2<sup>nd</sup>?) component <br>
 
-
-```{r include=FALSE}
-# Change here the sample size
-sample_size <- c(rep(5:40, each=3),50)
-
-output <- as.data.frame(matrix(rep(NA, 5*length(sample_size)), ncol=5))
-colnames(output) <- c("Number_samples","PC1_var","PC2_var","AMOC_PC1","AMOC_PC2")
-
-line=0
-for (i in sample_size) {
-  line=line+1
-  # 1. Sample years
-  which_samples <- sample(2:(nrow(zh)-1), size = sample_size[i],replace = F)
-  which_samples <- c(which_samples,1,nrow(zh))
-  which_samples <- which_samples[order(which_samples)]
-  mdata <- zh[which_samples,]
-  # reorder chronologically
-  mdata <- mdata[order(mdata[,1]),]
-  #remove rare species
-  # present less than 3 times in the assemblage
-  mdata <- mdata[,colSums(mdata>0)>3]
-  
-  # 2. Do ordination 
-  PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
-  PCAout<-dudi.pca(PCAout, scannf = FALSE)
-  #summary(PCAout)
-  
-  # 3. Run changepoints on PC1
-  cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
-  cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC1)])
-  if(length(cptmean.AMOC.PC1)==0) cptmean.AMOC.PC1 <- NA
-  
-  # 4. Run changepoints on PC2
-  cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
-  cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC2)])
-  if(length(cptmean.AMOC.PC2)==0) cptmean.AMOC.PC2 <- NA
-  
-  # Save outputs
-  output$Number_samples[line] <- i
-  output$PC1_var[line]        <- PCAout$eig[1]/sum(PCAout$eig)*100
-  output$PC2_var[line]        <- PCAout$eig[2]/sum(PCAout$eig)*100
-  output$AMOC_PC1[line]       <- cptmean.AMOC.PC1
-  output$AMOC_PC2[line]       <- cptmean.AMOC.PC2
-
-}
-output
-
-# # PELT method with AIC penalty
-# cptmean.AIC <- cpt.mean(y, method="PELT",penalty = "AIC")
-# (cptmean.AIC.date<-as.numeric(time[cpts(cptmean.AIC)]))
-# 
-# # PELT method with manual penalty (elbow method)
-# plot(0,0,xlim=c(0,20), ylim=c(0,15),col ="white", ylab="Number of changes in mean", xlab="Penalty", font=2,main="Elbow plot - choice of the penalty for changepoints analysis \nPruned Exact Linear Time (PELT) method")
-# abline(h = c(seq(from=0, to=20, by=1),15), lty=3, col=adjustcolor("black",alpha.f = 0.5))
-# abline(h=length(cptmean.AIC.date), lty=3, col="black", lwd=2)
-# for (i in seq(from = 0, to = 20, by = 0.05)) {
-#   cptmean=cpt.mean(y, method="PELT", penalty = "Manual", pen.value = i)
-#   nb <- length(cpts(cptmean))
-#   points(nb~i, pch=20)
-# }
-# legend("topright",legend = c("AIC","Manual - fluctuating penalty"), title = "Methods to chose the number of changes in mean",bty="n", pch = c(NA,20), lty=c(3,NA), lwd=c(2,NA), cex = 0.8)
-# # change the pen.value according to the elbow plot
-# cptmean.Manual <- cpt.mean(y, method="PELT",penalty = "Manual", pen.value = 20)
-# (cptmean.Manual.date<-as.numeric(time[cpts(cptmean.Manual)]))
-# 
-# # Select here the final changepoint(s) you want to keep
-# my_cpt <- (cptmean.Manual.date<-as.numeric(time[cpts(cptmean.Manual)]))
-# if(is.null(my_cpt))
-#   cat("\nWarning! No changepoints were detected. One of the condition for alternative stable state\nis an abrupt transition (see Andersen et al 2009, and our discussion in Bruel et al 2O18).\n\n")
-# if(!is.null(my_cpt)) {
-#   my_cpt <- as.data.frame(matrix(c(my_cpt,rep(NA,length(my_cpt))),ncol=2,byrow=F))
-#   for (i in 1:nrow(my_cpt)) my_cpt[i,2]=time[which(time==my_cpt[i,1])+1]
-#   # Re-arrange you my_cpt matrix
-#   my_cpt <- my_cpt[order(my_cpt[,1],decreasing = T),order(my_cpt[1,],decreasing = T)]
-# }
-
-
-```
 
 
 ```{r}
@@ -194,399 +114,40 @@ grid.arrange(p1,p2, nrow=1)
 ```
 <br>`r fig_cap("percentage explained by PCs", "Percentage explained by PC axes according to number of samples analysed")`
 
+# Types of sampling
+
+1. Random <br>
+2. Regular <br>
+3. Convergent <br>
+
 ```{r}
-p1 <- ggplot(output, aes(AMOC_PC1, Number_samples)) + geom_point() + xlim(1850,2017)
-p2 <- ggplot(output, aes(AMOC_PC2,Number_samples)) + geom_point() + xlim(1850,2017)
-grid.arrange(p1,p2, nrow=2)
+source("ar1_process.R")
+source("R/uncertainty_tolerance.R")
+args(ut)
 ```
-<br>`r fig_cap("timing of cpts", "Timing of changepoint")`
 
-
-# Optimizing sampling by adding closest sample to shift
 
 When analysing more or less sample is easy (e.g., counting cladoceran samples vs analyzing DNA samples), can we find an optimal sampling?
 
 Logic is a bit different, we want to know what is the minimum number of random sample we should start with, and then add samples around it to actually find the shifting point
 
-```{r}
-# Change here the sample size
-sample_size <- c(rep(13:30, each=30))
-#sample_size <- 15
-output <- as.data.frame(matrix(rep(NA, 5*length(sample_size)), ncol=5))
-colnames(output) <- c("Initial_number_samples","Initial_AMOC_PC1","Initial_AMOC_PC2","Number_needed_for_AMOC_PC1","Number_needed_for_AMOC_PC2")
+```{r, cache = T}
+output <- ut(y=exp(ar1), sample_size = c(20:50), threshold_error = c(2:10))
+names(output)
+head(output$convergence_cptmean)
+ggplot(output$convergence_cptmean, aes(sample_size,number_sample_added)) + geom_point(alpha=.3)
 
-output <- output[,c(1,2,4)]
-
-for (i in 1:length(sample_size)) {
-  if(i == 1)  {
-    mdata <- zh[order(zh[,1]),]
-    # 2. Do ordination 
-    PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
-    PCAout<-dudi.pca(PCAout, scannf = FALSE)
-    true.eig1 <- PCAout$eig[1]/sum(PCAout$eig)*100
-    true.eig2 <- PCAout$eig[2]/sum(PCAout$eig)*100
-    
-    # 3. Run changepoints on PC1
-    true.cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
-    true.cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(true.cptmean.AMOC.PC1)])
-    if(length(true.cptmean.AMOC.PC1)==0) true.cptmean.AMOC.PC1 <- NA
-    
-    # # 4. Run changepoints on PC2
-    true.cptmean.AMOC.PC2 <- NA
-    # true.cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
-    # true.cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(true.cptmean.AMOC.PC2)])
-    # if(length(true.cptmean.AMOC.PC2)==0) true.cptmean.AMOC.PC2 <- NA
-  
-    # Save outputs
-    c(nrow(zh), true.eig1, true.eig2,
-      true.cptmean.AMOC.PC1, true.cptmean.AMOC.PC2)
-  } 
-  # 1. Sample years
-  which_samples <- sample(2:(nrow(zh)-1), size = sample_size[i],replace = F)
-  which_samples <- c(which_samples, 1, nrow(zh))
-  which_samples <- which_samples[order(which_samples)]
-  mdata <- zh[which_samples,]
-  # reorder chronologically
-  mdata <- mdata[order(mdata[,1]),]
-  #remove rare species
-  # present less than 3 times in the assemblage
-  mdata <- mdata[,colSums(mdata>0)>3]
-  
-  # 2. Do ordination 
-  PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
-  PCAout<-dudi.pca(PCAout, scannf = FALSE)
-  
-  # 3. Run changepoints on PC1
-  cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
-  cptmean.AMOC.PC1_num <- cptmean.AMOC.PC1
-  cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC1)])
-  if(length(cptmean.AMOC.PC1)==0) cptmean.AMOC.PC1 <- NA
-  
-  # # 4. Run changepoints on PC2
-  # cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
-  # cptmean.AMOC.PC2_num <- cptmean.AMOC.PC2
-  # cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC2)])
-  # if(length(cptmean.AMOC.PC2)==0) cptmean.AMOC.PC2 <- NA
-  
-  # Save outputs
-  output$Initial_number_samples[i]     <- sample_size[i]
-  output$Initial_AMOC_PC1[i]           <- cptmean.AMOC.PC1
-  #output$Initial_AMOC_PC2[i]           <- cptmean.AMOC.PC2
-  if(cptmean.AMOC.PC1==true.cptmean.AMOC.PC1){
-        output$Number_needed_for_AMOC_PC1[i] <- length(which_samples)
-        numberPC1_ok = TRUE
-        } else numberPC1_ok = FALSE
-  # if(!is.na(cptmean.AMOC.PC2) & !is.na(true.cptmean.AMOC.PC2) & cptmean.AMOC.PC2==true.cptmean.AMOC.PC2) {
-  #   output$Number_needed_for_AMOC_PC2[i] <- length(which_samples) 
-  #   numberPC2_ok = TRUE
-  # } else numberPC2_ok = FALSE
-  
-  # 5. Now, how many more samples are needed to get true cptmean.AMOC.PC1?
-  for (j in 1:(nrow(zh)-sample_size[i])) {
-    if(!numberPC1_ok) {
-      h=1
-      while((which_samples[cpts(cptmean.AMOC.PC1_num)]-h) %in% which_samples & which_samples[cpts(cptmean.AMOC.PC1_num)]-h > 0) h=h+1
-      which_samples <- c(which_samples, which_samples[cpts(cptmean.AMOC.PC1_num)]-h)
-      
-      h=1
-      while((which_samples[cpts(cptmean.AMOC.PC1_num)]+h) %in% which_samples & which_samples[cpts(cptmean.AMOC.PC1_num)]+h<nrow(zh)) h=h+1
-      which_samples <- c(which_samples, which_samples[cpts(cptmean.AMOC.PC1_num)]+h)
-      
-      which_samples <- which_samples[which_samples>0 & which_samples<= nrow(zh)]
-      which_samples <- unique(which_samples)
-      
-    which_samples <- which_samples[order(which_samples)]
-    mdata <- zh[which_samples,]
-    # reorder chronologically
-    mdata <- mdata[order(mdata[,1]),]
-    
-    # 2. Do ordination 
-    PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
-    PCAout<-dudi.pca(PCAout, scannf = FALSE)
-    #summary(PCAout)
-    
-    # 3. Run changepoints on PC1
-    cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
-    cptmean.AMOC.PC1_num <- cptmean.AMOC.PC1
-    cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC1)])
-    if(length(cptmean.AMOC.PC1)==0) cptmean.AMOC.PC1 <- NA
-    
-    # # 4. Run changepoints on PC2
-    # cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
-    # cptmean.AMOC.PC2_num <- cptmean.AMOC.PC2
-    # cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC2)])
-    # if(length(cptmean.AMOC.PC2)==0) cptmean.AMOC.PC2 <- NA
-    
-    if(!is.na(cptmean.AMOC.PC1) & !is.na(true.cptmean.AMOC.PC1) & cptmean.AMOC.PC1==true.cptmean.AMOC.PC1){
-        output$Number_needed_for_AMOC_PC1[i] <- length(which_samples)
-        numberPC1_ok = TRUE
-        } else numberPC1_ok = FALSE
-    # if(!is.na(cptmean.AMOC.PC2) & !is.na(true.cptmean.AMOC.PC2) & cptmean.AMOC.PC2==true.cptmean.AMOC.PC2) {
-    #   output$Number_needed_for_AMOC_PC2[i] <- length(which_samples) 
-    #   numberPC2_ok = TRUE
-    # } else numberPC2_ok = FALSE
-  }  
-    }
-  
-}
-output$total_added <- output$Number_needed_for_AMOC_PC1-output$Initial_number_samples-2
-output
-```
-
-
-```{r}
-ggplot(output, aes(Initial_number_samples,total_added)) + geom_point(alpha=.3)
-
-```
-<br>`r fig_cap("how many samples must be added to get true changepoint", "A 'biased' sampling (trying to detect the true shift by getting closest sample) is not a guarantee to reduce the total number of samples that should be analyzed to detect the true shift")`
-
-
-# Optimizing sampling by adding intermediate samples between shift and next sample analyzed
-
-```{r}
-# Change here the sample size
-sample_size <- c(rep(15:30, each=30))
-#sample_size <- 15
-output <- as.data.frame(matrix(rep(NA, 5*length(sample_size)), ncol=5))
-colnames(output) <- c("Initial_number_samples","Initial_AMOC_PC1","Initial_AMOC_PC2","Number_needed_for_AMOC_PC1","Number_needed_for_AMOC_PC2")
-
-output <- output[,c(1,2,4)]
-
-for (i in 1:length(sample_size)) {
-  if(i == 1)  {
-    mdata <- zh[order(zh[,1]),]
-    # 2. Do ordination 
-    PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
-    PCAout<-dudi.pca(PCAout, scannf = FALSE)
-    true.eig1 <- PCAout$eig[1]/sum(PCAout$eig)*100
-    true.eig2 <- PCAout$eig[2]/sum(PCAout$eig)*100
-    
-    # 3. Run changepoints on PC1
-    true.cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
-    true.cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(true.cptmean.AMOC.PC1)])
-    if(length(true.cptmean.AMOC.PC1)==0) true.cptmean.AMOC.PC1 <- NA
-    
-    # # 4. Run changepoints on PC2
-    # true.cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
-    # true.cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(true.cptmean.AMOC.PC2)])
-    # if(length(true.cptmean.AMOC.PC2)==0) true.cptmean.AMOC.PC2 <- NA
-  
-    # Save outputs
-    c(nrow(zh), true.eig1, true.eig2,
-      true.cptmean.AMOC.PC1, true.cptmean.AMOC.PC2)
-  } 
-  # 1. Sample years
-  which_samples <- sample(2:(nrow(zh)-1), size = sample_size[i],replace = F)
-  which_samples <- c(which_samples,1,nrow(zh))
-  which_samples <- which_samples[order(which_samples)]
-  mdata <- zh[which_samples,]
-  # reorder chronologically
-  mdata <- mdata[order(mdata[,1]),]
-  #remove rare species
-  # present less than 3 times in the assemblage
-  mdata <- mdata[,colSums(mdata>0)>3]
-  
-  # 2. Do ordination 
-  PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
-  PCAout<-dudi.pca(PCAout, scannf = FALSE)
-  
-  # 3. Run changepoints on PC1
-  cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
-  cptmean.AMOC.PC1_num <- cptmean.AMOC.PC1
-  cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC1)])
-  if(length(cptmean.AMOC.PC1)==0) cptmean.AMOC.PC1 <- NA
-  
-  # # 4. Run changepoints on PC2
-  # cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
-  # cptmean.AMOC.PC2_num <- cptmean.AMOC.PC2
-  # cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC2)])
-  # if(length(cptmean.AMOC.PC2)==0) cptmean.AMOC.PC2 <- NA
-  
-  # Save outputs
-  output$Initial_number_samples[i]     <- sample_size[i]
-  output$Initial_AMOC_PC1[i]           <- cptmean.AMOC.PC1
-  #output$Initial_AMOC_PC2[i]           <- cptmean.AMOC.PC2
-  if(cptmean.AMOC.PC1==true.cptmean.AMOC.PC1){
-        output$Number_needed_for_AMOC_PC1[i] <- length(which_samples)
-        numberPC1_ok = TRUE
-        } else numberPC1_ok = FALSE
-  # if(!is.na(cptmean.AMOC.PC2) & !is.na(true.cptmean.AMOC.PC2) & cptmean.AMOC.PC2==true.cptmean.AMOC.PC2) {
-  #   output$Number_needed_for_AMOC_PC2[i] <- length(which_samples) 
-  #   numberPC2_ok = TRUE
-  # } else numberPC2_ok = FALSE
-  
-  # 5. Now, how many more samples are needed to get true cptmean.AMOC.PC1?
-  for (j in 1:(nrow(zh)-sample_size[i])) {
-    if(!numberPC1_ok) {
-      
-      h=0
-      max_samp <- round((which_samples[cpts(cptmean.AMOC.PC1_num)+h]+which_samples[cpts(cptmean.AMOC.PC1_num)+h+1])/2)
-      while(max_samp %in% which_samples & (cpts(cptmean.AMOC.PC1_num)+h+1)<=nrow(zh)) {
-        h=h+1
-        other_limit <- ifelse(length(which_samples[cpts(cptmean.AMOC.PC1_num)+h+1])<=nrow(zh),
-                              which_samples[cpts(cptmean.AMOC.PC1_num)+h+1],
-                              nrow(zh))
-        max_samp <- round((which_samples[cpts(cptmean.AMOC.PC1_num)+h]+which_samples[cpts(cptmean.AMOC.PC1_num)+h+1])/2)
-        }
-      
-      
-      h=0
-      min_samp <- round((which_samples[cpts(cptmean.AMOC.PC1_num)-h]+which_samples[cpts(cptmean.AMOC.PC1_num)-h-1])/2)
-      while(min_samp %in% which_samples & (cpts(cptmean.AMOC.PC1_num)-h-1)>0) {
-        h=h+1
-        other_limit <- ifelse(length(which_samples[cpts(cptmean.AMOC.PC1_num)-h-1])>0,
-                              which_samples[cpts(cptmean.AMOC.PC1_num)-h-1],
-                              1)
-        min_samp <- round((which_samples[cpts(cptmean.AMOC.PC1_num)-h]+other_limit)/2)
-      }
-      
-      
-      
-      which_samples <- c(which_samples, max_samp, min_samp)
-      which_samples <- which_samples[!is.na(which_samples)]
-      which_samples <- which_samples[which_samples>0 & which_samples<= nrow(zh)]
-      which_samples <- unique(which_samples)
-      
-    which_samples <- which_samples[order(which_samples)]
-    mdata <- zh[which_samples,]
-    # reorder chronologically
-    mdata <- mdata[order(mdata[,1]),]
-    
-    # 2. Do ordination 
-    PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
-    PCAout<-dudi.pca(PCAout, scannf = FALSE)
-    #summary(PCAout)
-    
-    # 3. Run changepoints on PC1
-    cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
-    cptmean.AMOC.PC1_num <- cptmean.AMOC.PC1
-    cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC1)])
-    if(length(cptmean.AMOC.PC1)==0) cptmean.AMOC.PC1 <- NA
-    
-    # # 4. Run changepoints on PC2
-    # cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
-    # cptmean.AMOC.PC2_num <- cptmean.AMOC.PC2
-    # cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC2)])
-    # if(length(cptmean.AMOC.PC2)==0) cptmean.AMOC.PC2 <- NA
-    
-    if(!is.na(cptmean.AMOC.PC1) & !is.na(true.cptmean.AMOC.PC1) & cptmean.AMOC.PC1==true.cptmean.AMOC.PC1){
-        output$Number_needed_for_AMOC_PC1[i] <- length(which_samples)
-        numberPC1_ok = TRUE
-        } else numberPC1_ok = FALSE
-    # if(!is.na(cptmean.AMOC.PC2) & !is.na(true.cptmean.AMOC.PC2) & cptmean.AMOC.PC2==true.cptmean.AMOC.PC2) {
-    #   output$Number_needed_for_AMOC_PC2[i] <- length(which_samples) 
-    #   numberPC2_ok = TRUE
-    # } else numberPC2_ok = FALSE
-  }  
-    }
-  
-}
-output$total_added <- output$Number_needed_for_AMOC_PC1-output$Initial_number_samples
-output
-```
-
-```{r}
-ggplot(output, aes(Initial_number_samples,total_added)) + geom_point()
 ```
 <br>`r fig_cap("how many samples must be added to get true changepoint method 2", "Adding progressively samples to fill in the gaps between transition and next/previous sample is a better strategy.")`
 
-```{r}
-output2 <- output %>% 
-  group_by(Initial_number_samples) %>% 
-  summarise(total0 = sum(total_added==0))
-
-plot(output2)
-abline(h=80)
-```
-
-
-
-# Chances of getting close to the real break
-
-Following discussion with Easton on 10/10/2019.
-
-```{r}
-# Change here the threshold year: how close you need to get close to the actual year
-threshold_yr = c(2,4,6,8,10,12,14)
-
-# Change here the sample size
-sample_size <- c(rep(15:50, each=100))
-#sample_size <- 15
-output3 <- as.data.frame(matrix(rep(NA, 4*length(sample_size)*length(threshold_yr)), ncol=4))
-colnames(output3) <- c("Initial_number_samples","threshold_yr","Initial_AMOC_PC1","Within_threshold")
-
-
-for (i in 1:length(sample_size)) {
-  if(i == 1)  {
-    row=0
-    mdata <- zh[order(zh[,1]),]
-    # 2. Do ordination 
-    PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
-    PCAout<-dudi.pca(PCAout, scannf = FALSE)
-    true.eig1 <- PCAout$eig[1]/sum(PCAout$eig)*100
-    true.eig2 <- PCAout$eig[2]/sum(PCAout$eig)*100
-    
-    # 3. Run changepoints on PC1
-    true.cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
-    true.cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(true.cptmean.AMOC.PC1)])
-    if(length(true.cptmean.AMOC.PC1)==0) true.cptmean.AMOC.PC1 <- NA
-    
-    # # 4. Run changepoints on PC2
-    # true.cptmean.AMOC.PC2 <- cpt.mean(PCAout$li[,2], method="AMOC") 
-    # true.cptmean.AMOC.PC2 <- as.numeric(mdata[,1][cpts(true.cptmean.AMOC.PC2)])
-    # if(length(true.cptmean.AMOC.PC2)==0) true.cptmean.AMOC.PC2 <- NA
-  
-    # Save outputs
-    c(nrow(zh), true.eig1, true.eig2,
-      true.cptmean.AMOC.PC1, true.cptmean.AMOC.PC2)
-  } 
-
-  for (j in 1:length(threshold_yr)) {
-    row=row+1
-      # 1. Sample years
-  which_samples <- sample(2:(nrow(zh)-1), size = sample_size[i],replace = F)
-  which_samples <- c(which_samples,1,nrow(zh))
-  which_samples <- which_samples[order(which_samples)]
-  mdata <- zh[which_samples,]
-  # reorder chronologically
-  mdata <- mdata[order(mdata[,1]),]
-  #remove rare species
-  # present less than 3 times in the assemblage
-  mdata <- mdata[,colSums(mdata>0)>3]
-  
-  # 2. Do ordination 
-  PCAout<-decostand(mdata[,-1],"hellinger",na.rm=TRUE)
-  PCAout<-dudi.pca(PCAout, scannf = FALSE)
-  
-  # 3. Run changepoints on PC1
-  cptmean.AMOC.PC1 <- cpt.mean(PCAout$li[,1], method="AMOC") 
-  cptmean.AMOC.PC1_num <- cptmean.AMOC.PC1
-  cptmean.AMOC.PC1 <- as.numeric(mdata[,1][cpts(cptmean.AMOC.PC1)])
-  if(length(cptmean.AMOC.PC1)==0) cptmean.AMOC.PC1 <- 0
-  
-  # Save outputs
-  output3$Initial_number_samples[row]     <- sample_size[i]
-  output3$threshold_yr[row]               <- threshold_yr[j]
-  output3$Initial_AMOC_PC1[row]           <- cptmean.AMOC.PC1
-  if(abs(cptmean.AMOC.PC1-true.cptmean.AMOC.PC1)<=threshold_yr[j]){
-        numberPC1_ok = 1
-        } else {numberPC1_ok = 0}
-  
-  output3$Within_threshold[row] <- numberPC1_ok
-  }
-  
-}
-head(output3)
-tail(output3)
-```
 
 ```{r summary }
-names(output3)
+names(output$random_cptmean)
 
-outsumm <- as.data.frame(with(output3, tapply(Within_threshold,list("Initial_number_samples"=Initial_number_samples,"threshold_yr"=threshold_yr), sum)))
+outsumm <- as.data.frame(with(output$random_cptmean, tapply(same_cptmean,list("Initial_number_samples"=sample_size,"threshold_yr"=threshold_error), sum)))
 outsumm$InitialNumber <- as.numeric(rownames(outsumm))
 outsumm <- melt(outsumm, id.vars = "InitialNumber")
-outsumm$more80 <- ifelse(outsumm$value>=80,1,0)
+outsumm$more80 <- ifelse(outsumm$value>=7,1,0)
 ggplot(outsumm, aes(InitialNumber, variable, fill=more80)) + geom_tile() +
   xlab("Sample analyzed") + ylab("Tolerance for error (year)")
 
@@ -600,3 +161,5 @@ ggplot(outsumm, aes(InitialNumber, variable, fill=more80)) + geom_tile() +
 Is changepoint necesseraly what we want? We can be interested in changes in mean and/or variance. Right now, I've just looked at mean.
 
 A few methods looking at critical transition (e.g., Taranu et al 2018^[Taranu, Z.E., Carpenter, S.R., Frossard, V., Jenny, J.-P., Thomas, Z., Vermaire, J.C., Perga, M.-E., 2018. Can we detect ecosystem critical transitions and signals of changing resilience from paleo-ecological records? Ecosphere 9, e02438. https://doi.org/10.1002/ecs2.2438]), or increase variance (e.g., Dakos et al 2012^[Dakos, V., Carpenter, S.R., Brock, W.A., Ellison, A.M., Guttal, V., Ives, A.R., Kéfi, S., Livina, V., Seekell, D.A., van Nes, E.H., Scheffer, M., 2012. Methods for Detecting Early Warnings of Critical Transitions in Time Series Illustrated Using Simulated Ecological Data. PloS One 7, e41010. https://doi.org/10.1371/journal.pone.0041010]), etc., will value having more continuous sampling (although the online DLMs method in Taranu et al 2018 allows for non-continuous sampling).
+
+If we know a priori the shape of the relationship, a non-random sampling is preferred, e.g., <a href="https://onlinelibrary.wiley.com/doi/full/10.1002/env.2552"> VB growth function </a>.
