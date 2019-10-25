@@ -18,16 +18,19 @@ ut <- function(x = NULL, y, sample_size = NULL, type=c("mean","sd"),
   out_list <- list()
   
   # Get the "TRUE" changepoint in mean
-  true.cptmean.AMOC.y <- cpt.mean(y, method="AMOC") 
-  true.cptmean.AMOC.y <- as.numeric(x[cpts(true.cptmean.AMOC.y)])
-  if(length(true.cptmean.AMOC.y)==0) true.cptmean.AMOC.y <- 0
-  if (true.cptmean.AMOC.y == 0) cat("No changepoint in mean was detected on the full y serie -- cannot compute the impact of lower sampling.")
-  
+  if("mean" %in% type) {
+    true.cptmean.AMOC.y <- cpt.mean(y, method="AMOC") 
+    true.cptmean.AMOC.y <- as.numeric(x[cpts(true.cptmean.AMOC.y)])
+    if(length(true.cptmean.AMOC.y)==0) true.cptmean.AMOC.y <- 0
+    if (true.cptmean.AMOC.y == 0) cat("No changepoint in mean was detected on the full y serie -- cannot compute the impact of lower sampling.")
+  }  
   # Get the "TRUE" changepoint in variance
-  true.cptvar.AMOC.y <- cpt.var(y, method="AMOC") 
-  true.cptvar.AMOC.y <- as.numeric(x[cpts(true.cptvar.AMOC.y)])
-  if(length(true.cptvar.AMOC.y)==0) true.cptvar.AMOC.y <- 0
-  if (true.cptvar.AMOC.y == 0) cat("No changepoint in variance was detected on the full y serie -- cannot compute the impact of lower sampling.")
+  if("sd" %in% type) {
+    true.cptvar.AMOC.y <- cpt.var(y, method="AMOC") 
+    true.cptvar.AMOC.y <- as.numeric(x[cpts(true.cptvar.AMOC.y)])
+    if(length(true.cptvar.AMOC.y)==0) true.cptvar.AMOC.y <- 0
+    if (true.cptvar.AMOC.y == 0) cat("No changepoint in variance was detected on the full y serie -- cannot compute the impact of lower sampling.")
+  }  
   
   # I - Regular sampling ####
   if(regular_sampling) {

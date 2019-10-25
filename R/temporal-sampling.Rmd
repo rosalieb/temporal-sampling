@@ -132,13 +132,13 @@ When analysing more or less sample is easy (e.g., counting cladoceran samples vs
 Logic is a bit different, we want to know what is the minimum number of random sample we should start with, and then add samples around it to actually find the shifting point
 
 ```{r, cache = T}
-output <- ut(y=exp(ar1), sample_size = c(20:50), threshold_error = c(2:10))
+output <- ut(y=exp(ar1), sample_size = c(20:50), threshold_error = c(2:10), each = 100, type="mean")
 names(output)
 head(output$convergence_cptmean)
 ggplot(output$convergence_cptmean, aes(sample_size,number_sample_added)) + geom_point(alpha=.3)
 
 ```
-<br>`r fig_cap("how many samples must be added to get true changepoint method 2", "Adding progressively samples to fill in the gaps between transition and next/previous sample is a better strategy.")`
+<br>`r fig_cap("how many samples must be added to get true changepoint method 2", "Adding progressively samples to fill in the gaps between transition and next/previous sample.")`
 
 
 ```{r summary }
@@ -147,12 +147,13 @@ names(output$random_cptmean)
 outsumm <- as.data.frame(with(output$random_cptmean, tapply(same_cptmean,list("Initial_number_samples"=sample_size,"threshold_yr"=threshold_error), sum)))
 outsumm$InitialNumber <- as.numeric(rownames(outsumm))
 outsumm <- melt(outsumm, id.vars = "InitialNumber")
-outsumm$more80 <- ifelse(outsumm$value>=7,1,0)
+outsumm$more80 <- ifelse(outsumm$value>=80,1,0)
+
 ggplot(outsumm, aes(InitialNumber, variable, fill=more80)) + geom_tile() +
   xlab("Sample analyzed") + ylab("Tolerance for error (year)")
 
 ```
-<br>`r fig_cap("how many samples must be added to get true changepoint method 2", "Adding progressively samples to fill in the gaps between transition and next/previous sample is a better strategy.")`
+<br>`r fig_cap("how many random samples to get the break on average", "Dark blue: the random number of samples analyzed did not allow detection of the break")`
 
 
 
