@@ -23,7 +23,8 @@ The Lake Zurich countings were carried out as part of a study during my PhD, com
 I have an agreement with the different persons who gave me access to sequences that they will be co-author on the publication. In the case of Lake Zurich sequence, this person is Nathalie Dubois (ETH Zurich, CH). So until this is figured out, I'd rather not publish any data on my Github.
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(include = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_knit$set(root.dir = dirname(getwd()))
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 
 getpath4data <- function() {
   if(Sys.getenv("USER")=="Rosalie") return("/Volumes/-/Script R/Data-off-GitHub/temporal-sampling/")
@@ -44,6 +45,7 @@ require(ggplot2)
 require(gridExtra)
 require(plotly)
 library(reshape)
+
 ```
 
 # Lake Zurich
@@ -83,7 +85,7 @@ addClustZone(clado.clust,clust,4,col="black")
 ```
 <br>`r fig_cap("strat plot zurich", "Stratigraphic abundance of cladoceran remains in Lake Zürich sediment core ZH17-21. (I'm aware it's impossible to read it with that many taxa, I have the same code somewhere applied to sub groups which make it way easier to read)")`
 
-```{r strat plot zurich selected sp, include=T, echo=F}
+```{r strat plot zurich selected sp, echo=FALSE}
 if(is.zh){
   par(mfrow=c(1,1))
 par(mar=c(5.1,4.1,2.1,20))
@@ -105,15 +107,6 @@ In most paleo-reconstructions, we're interested in the changepoints in the serie
 Would random sampling generate the same results as if all the samples were analyzed?
 
 
-
-
-```{r}
-p1 <- ggplot(output, aes(Number_samples, PC1_var)) + geom_point() + stat_smooth()
-p2 <- ggplot(output, aes(Number_samples, PC2_var)) + geom_point() + stat_smooth()
-grid.arrange(p1,p2, nrow=1)
-```
-<br>`r fig_cap("percentage explained by PCs", "Percentage explained by PC axes according to number of samples analysed")`
-
 # Types of sampling
 
 1. Random <br>
@@ -131,7 +124,7 @@ When analysing more or less sample is easy (e.g., counting cladoceran samples vs
 
 Logic is a bit different, we want to know what is the minimum number of random sample we should start with, and then add samples around it to actually find the shifting point
 
-```{r, cache = T}
+```{r echo=FALSE, message=FALSE, warning=FALSE, cache=T}
 output <- ut(y=exp(ar1), sample_size = c(20:50), threshold_error = c(2:10), each = 100, type="mean")
 names(output)
 head(output$convergence_cptmean)
@@ -141,7 +134,7 @@ ggplot(output$convergence_cptmean, aes(sample_size,number_sample_added)) + geom_
 <br>`r fig_cap("how many samples must be added to get true changepoint method 2", "Adding progressively samples to fill in the gaps between transition and next/previous sample.")`
 
 
-```{r summary }
+```{r summary, echo=FALSE, message=FALSE, warning=FALSE}
 names(output$random_cptmean)
 
 outsumm <- as.data.frame(with(output$random_cptmean, tapply(same_cptmean,list("Initial_number_samples"=sample_size,"threshold_yr"=threshold_error), sum)))
@@ -154,6 +147,65 @@ ggplot(outsumm, aes(InitialNumber, variable, fill=more80)) + geom_tile() +
 
 ```
 <br>`r fig_cap("how many random samples to get the break on average", "Dark blue: the random number of samples analyzed did not allow detection of the break")`
+
+# Do the same but change the location of the changepoint
+
+```{r message=FALSE, warning=FALSE, cache=T, include=FALSE}
+shift_vector <- sample(2:99, size = 50, replace = F)
+
+for (i in shift_vector) {
+  # Set simulation parameters
+mu = 0
+sigma = 0.1
+phi = 1
+shift_time = i
+max_time = 100
+
+# Set up vectors
+ar1 <- vector(mode = 'numeric',100)
+ar1[1] <- 10
+
+# Build time series
+for (t in 2:max_time){
+  if(t == shift_time){ar1[t-1]=-10}
+  ar1[t] <- ar1[t-1] + phi*rnorm(1,mean=mu,sd = sigma)
+
+}
+
+temporary <- ut(y=exp(ar1), sample_size = c(10:50), threshold_error = c(1:10), each = 1, type="mean")
+
+if(i==shift_vector[1]) {
+  out_regular_cptmean     <- temporary$regular_cptmean
+  out_random_cptmean      <- temporary$random_cptmean
+  out_convergence_cptmean <-temporary$convergence_cptmean
+} else {
+  out_regular_cptmean     <- rbind(out_regular_cptmean, temporary$regular_cptmean)
+  out_random_cptmean      <- rbind(out_random_cptmean, temporary$random_cptmean)
+  out_convergence_cptmean <- rbind(out_convergence_cptmean, temporary$convergence_cptmean)
+}
+}
+
+dim(out_regular_cptmean)
+dim(out_random_cptmean)
+dim(out_convergence_cptmean)
+
+outsumm <- as.data.frame(with(out_random_cptmean, tapply(same_cptmean,list("Initial_number_samples"=sample_size,"threshold_yr"=threshold_error), sum)))
+outsumm$InitialNumber <- as.numeric(rownames(outsumm))
+outsumm <- melt(outsumm, id.vars = "InitialNumber")
+outsumm$more80 <- ifelse(outsumm$value>=50*.8,1,0)
+
+
+```
+
+```{r}
+ggplot(outsumm, aes(InitialNumber, variable, fill=more80)) + geom_tile() +
+  xlab("Sample analyzed") + ylab("Tolerance for error (year)")
+
+# Something is wrong here, it is sometimes adding >900 samples.I think it has to do with the while loop in the ut() function.
+ggplot(out_convergence_cptmean, aes(sample_size,number_sample_added)) + geom_point(alpha=.3) + ylim(0,25)
+
+boxplot(out_convergence_cptmean$number_sample_added ~ out_convergence_cptmean$sample_size, ylim=c(0,25))
+```
 
 
 

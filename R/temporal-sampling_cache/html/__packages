@@ -1,0 +1,13 @@
+base
+dplyr
+rioja
+permute
+lattice
+vegan
+ade4
+zoo
+changepoint
+ggplot2
+gridExtra
+plotly
+reshape
