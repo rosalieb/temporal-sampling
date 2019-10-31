@@ -16,8 +16,6 @@ editor_options:
 fontsize: 11pt
 ---
 
-**Note for next time: write function to compute the tolerance to error against sample size**
-
 Before running the script, define below in the function _getpath4data_ the local folder where you are storing the dataset(s). <br>
 The Lake Zurich countings were carried out as part of a study during my PhD, comparing several lakes trajectory. I still haven't published that study.
 I have an agreement with the different persons who gave me access to sequences that they will be co-author on the publication. In the case of Lake Zurich sequence, this person is Nathalie Dubois (ETH Zurich, CH). So until this is figured out, I'd rather not publish any data on my Github.
@@ -155,34 +153,34 @@ shift_vector <- sample(2:99, size = 50, replace = F)
 
 for (i in shift_vector) {
   # Set simulation parameters
-mu = 0
-sigma = 0.1
-phi = 1
-shift_time = i
-max_time = 100
-
-# Set up vectors
-ar1 <- vector(mode = 'numeric',100)
-ar1[1] <- 10
-
-# Build time series
-for (t in 2:max_time){
-  if(t == shift_time){ar1[t-1]=-10}
-  ar1[t] <- ar1[t-1] + phi*rnorm(1,mean=mu,sd = sigma)
-
-}
-
-temporary <- ut(y=exp(ar1), sample_size = c(10:50), threshold_error = c(1:10), each = 1, type="mean")
-
-if(i==shift_vector[1]) {
-  out_regular_cptmean     <- temporary$regular_cptmean
-  out_random_cptmean      <- temporary$random_cptmean
-  out_convergence_cptmean <-temporary$convergence_cptmean
-} else {
-  out_regular_cptmean     <- rbind(out_regular_cptmean, temporary$regular_cptmean)
-  out_random_cptmean      <- rbind(out_random_cptmean, temporary$random_cptmean)
-  out_convergence_cptmean <- rbind(out_convergence_cptmean, temporary$convergence_cptmean)
-}
+  mu = 0
+  sigma = 0.5
+  phi = 1
+  shift_time = i
+  max_time = 100
+  
+  # Set up vectors
+  ar1 <- vector(mode = 'numeric',100)
+  ar1[1] <- 10
+  
+  # Build time series
+  for (t in 2:max_time){
+    if(t == shift_time){ar1[t-1]=-10}
+    ar1[t] <- ar1[t-1] + phi*rnorm(1,mean=mu,sd = sigma)
+  
+  }
+  
+  temporary <- ut(y=exp(ar1), sample_size = c(10:50), threshold_error = c(1:4), each = 1, type="mean")
+  
+  if(i==shift_vector[1]) {
+    out_regular_cptmean     <- temporary$regular_cptmean
+    out_random_cptmean      <- temporary$random_cptmean
+    out_convergence_cptmean <-temporary$convergence_cptmean
+  } else {
+    out_regular_cptmean     <- rbind(out_regular_cptmean, temporary$regular_cptmean)
+    out_random_cptmean      <- rbind(out_random_cptmean, temporary$random_cptmean)
+    out_convergence_cptmean <- rbind(out_convergence_cptmean, temporary$convergence_cptmean)
+  }
 }
 
 dim(out_regular_cptmean)
@@ -202,7 +200,7 @@ ggplot(outsumm, aes(InitialNumber, variable, fill=more80)) + geom_tile() +
   xlab("Sample analyzed") + ylab("Tolerance for error (year)")
 
 # Something is wrong here, it is sometimes adding >900 samples.I think it has to do with the while loop in the ut() function.
-ggplot(out_convergence_cptmean, aes(sample_size,number_sample_added)) + geom_point(alpha=.3) + ylim(0,25)
+ggplot(out_convergence_cptmean, aes(sample_size,number_sample_added)) + geom_point(alpha=.15)  + facet_wrap(~threshold_error)
 
 boxplot(out_convergence_cptmean$number_sample_added ~ out_convergence_cptmean$sample_size, ylim=c(0,25))
 ```

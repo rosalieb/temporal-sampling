@@ -191,6 +191,8 @@ ut <- function(x = NULL, y, sample_size = NULL, type=c("mean","sd"),
       y2 <- y[which_samples]
       x2 <- x[which_samples]
       
+      which_samples_reset <- which_samples
+      
       # 2. Case 1: changepoint in mean
       if("mean" %in% type) {
         if (true.cptmean.AMOC.y != 0) {
@@ -199,15 +201,20 @@ ut <- function(x = NULL, y, sample_size = NULL, type=c("mean","sd"),
           num <- cpts(cptmean.AMOC.y2)
           cptmean.AMOC.y2 <- as.numeric(x2[cpts(cptmean.AMOC.y2)])
           if(length(cptmean.AMOC.y2)==0) cptmean.AMOC.y2 <- 0
+          num_reset <- num
           
           for (j in seq_along(threshold_error)) {
+            which_samples <- which_samples_reset
+            num <- num_reset
+            print(paste0(sample_size[i],"-",threshold_error[j]))
+            
             # 3. Decision
             t1 = sample_size[i] # The while function doesn't stop sometimes, so stopping the function once we reached the max length of the dataset
             while(abs(cptmean.AMOC.y2-true.cptmean.AMOC.y)>threshold_error[j] & t1 < length(y)) {
               t1 = t1 + 1
               # 3.1. Add an extra point
               # random point is a random sample between change point and following sample
-              additional_sample <- sample(c(which_samples[num]+1):c(which_samples[num+1]-1), size = 1)
+              if (length(c(which_samples[num] + 1):c(which_samples[num + 1] - 1))>0) additional_sample <- sample(c(which_samples[num]+1):c(which_samples[num+1]-1), size = 1)
               which_samples <- c(which_samples,additional_sample)
               which_samples <- which_samples[order(which_samples)]
               y2 <- y[which_samples]
@@ -218,17 +225,19 @@ ut <- function(x = NULL, y, sample_size = NULL, type=c("mean","sd"),
               num <- cpts(cptmean.AMOC.y2)
               cptmean.AMOC.y2 <- as.numeric(x2[cpts(cptmean.AMOC.y2)])
               if(length(cptmean.AMOC.y2)==0) cptmean.AMOC.y2 <- 0
-              print(additional_sample)
+              #print(additional_sample)
             }
             
             # 4. Save outputs
-            if (i == 1 & j == 1) 
+            if (i == 1 & j == 1) {
               out_list$convergence_cptmean <- data.frame("sample_size"=sample_size[i],
                                                          "threshold_error"=threshold_error[j],
                                                          "number_sample_added" = length(which_samples)-sample_size[i],
                                                          "final_sample_size" = length(which_samples),
                                                          "cptmean"=ifelse(cptmean.AMOC.y2==0,NA,cptmean.AMOC.y2),
-                                                         "same_cptmean"=ifelse(abs(cptmean.AMOC.y2-true.cptmean.AMOC.y)<=threshold_error[j], 1, 0)) else
+                                                         "same_cptmean"=ifelse(abs(cptmean.AMOC.y2-true.cptmean.AMOC.y)<=threshold_error[j], 1, 0)) 
+              #print(paste0("i and j=",i,"-",j)) 
+              } else
                                                          {
                                                            out_list$convergence_cptmean <- rbind(out_list$convergence_cptmean, c(sample_size[i],
                                                                                                                                  threshold_error[j],
