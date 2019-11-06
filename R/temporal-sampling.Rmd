@@ -1,20 +1,41 @@
 ---
-title: "Effect of temporal sampling"
-author: "Rosalie Bruel"
+title: "Sampling requirements to detect ecosystem change"
+author: "Rosalie Bruel and Easton White"
 date: "03/10/2019"
-output: 
+output:
   html_document:
     df_print: paged
-    fig_caption: true
+    fig_caption: yes
+    number_sections: yes
     toc: yes
     toc_depth: 3
-    toc_float: true
-    number_sections: true
-editor_options: 
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+fontsize: 11pt
+editor_options:
   chunk_output_type: console
   df_print: paged
-fontsize: 11pt
 ---
+
+# Things to do:
+
+- Easton: build theoretical results figure
+- Sketch out figures for case studies
+- Conceptual diagram 
+- Begin writing - probably a shorter piece
+- Possible journals: Methods Ecology and Evolution, Biological Conservation, Journal of Environmental Management, Environmental Monitoring and Assessment, BioScience, 
+
+# Introduction and setup
+
+- Set up ideas about monitoring and cost of monitoring
+- Idea of detecting change over time
+- Historical data and ability to choose how much to sample
+- Here, we develop a set of tools to ... We first investigate these tools using a simulated-based apporach. We then apply these tools to the detection of change points for a set of lakes...
+
+
+# Methods and results
 
 Before running the script, define below in the function _getpath4data_ the local folder where you are storing the dataset(s). <br>
 The Lake Zurich countings were carried out as part of a study during my PhD, comparing several lakes trajectory. I still haven't published that study.
@@ -26,7 +47,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 
 getpath4data <- function() {
   if(Sys.getenv("USER")=="Rosalie") return("/Volumes/-/Script R/Data-off-GitHub/temporal-sampling/")
-  if(Sys.getenv("USER")=="put here your USER") return("replace here with path to data")
+  if(Sys.getenv("USER")=="eastonwhite") return("~/Desktop/Research/soil-temporal-sampling/")
   if(Sys.getenv("USER")!="Rosalie"|Sys.getenv("USER")!="put here your USER") stop("You need to get the data and define their location.")
 }
 
@@ -123,7 +144,7 @@ When analysing more or less sample is easy (e.g., counting cladoceran samples vs
 Logic is a bit different, we want to know what is the minimum number of random sample we should start with, and then add samples around it to actually find the shifting point
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, cache=T}
-output <- ut(y=exp(ar1), sample_size = c(20:50), threshold_error = c(2:10), each = 100, type="mean")
+output <- ut(y=exp(ar1), sample_size = c(20:50), threshold_error = 5, each = 100, type="mean")
 names(output)
 head(output$convergence_cptmean)
 ggplot(output$convergence_cptmean, aes(sample_size,number_sample_added)) + geom_point(alpha=.3)
@@ -204,6 +225,22 @@ ggplot(out_convergence_cptmean, aes(sample_size,number_sample_added)) + geom_poi
 
 boxplot(out_convergence_cptmean$number_sample_added ~ out_convergence_cptmean$sample_size, ylim=c(0,25))
 ```
+
+
+# Theoretical results
+
+We began with a theoretical exploration of the determiners
+
+We modeled a simple AR-1 process with a response variable that represents either population size, biodiversity, or some metric of community composition. The model includes temporal variability ($\sigma$), autocorrelation ($\phi$), the size of the shift ($\delta$), and a specific time when the shift occured ($\tau$):
+
+$$
+Model here
+$$
+
+We then explored how each of these model components affected our ability to detect a change point. We simulate an entire time series, but we also examine the effect of not sampling every year. We specifically study how the amount of samples included and the type of sampling affects the detection probability. In particular, we examine three types of sampling: random, regular, and iterative. 
+
+
+
 
 
 
