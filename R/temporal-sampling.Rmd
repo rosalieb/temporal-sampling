@@ -73,10 +73,10 @@ library(reshape)
 
 ```{r read zurich data, include=T}
 zh <- read.delim(paste0(getpath4data(),"ZH17_21_clado.txt")); is.zh=T
-zh2 <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt")); is.zh=F
-zh3 <- cbind(zh, matrix(rep(0,nrow(zh)*(ncol(zh)-1)), nrow(zh)))
-zh3 <- rbind(zh3, cbind(matrix(c(1700:1710), rep(0,10*(ncol(zh)-1))),unlist(as.vector(zh2[1:10,-1]))) )
-zh<-zh3
+# zh2 <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt")); is.zh=F
+# zh3 <- cbind(zh, matrix(rep(0,nrow(zh)*(ncol(zh)-1)), nrow(zh)))
+# zh3 <- rbind(zh3, cbind(matrix(c(1700:1710), rep(0,10*(ncol(zh)-1))),unlist(as.vector(zh2[1:10,-1]))) )
+# zh<-zh3
 ```
 
 ## Study site
