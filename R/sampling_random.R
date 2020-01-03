@@ -13,6 +13,7 @@ sample_random <- function(x, n, messages = T)
   .sample_regular(x, n, messages)
 .sample_regular <- function(x, n, messages) {
   require(ecp)
+  require(zoo)
   
   if(!is.vector(x)) stop("x is required and must be a vector")
   if(is.null(n)) n <- length(x)
@@ -21,7 +22,11 @@ sample_random <- function(x, n, messages = T)
   which_samples <- sample(1:length(x), n)
   which_samples <- which_samples[order(which_samples)]
   
-  x2 <- matrix(x[which_samples], ncol=1)
+  # transform into matrix to run e.divisive
+  x2 <- matrix(c(1:length(x),rep(NA,length(x))), ncol=2)
+  x2[which_samples,2] <- x[which_samples]
+  x2[,2] <- na.locf(x2[,2])
+  x2 <- matrix(x2[,2])
   
   changepoints <- e.divisive(x2, min.size = 2)
   
