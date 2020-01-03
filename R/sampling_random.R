@@ -19,7 +19,7 @@ sample_random <- function(x, n, messages = T)
   if(is.null(n)) n <- length(x)
   
   # Sample n samples from initial x
-  which_samples <- sample(1:length(x), n)
+  which_samples <- c(1,length(x),sample(1:length(x), n-2))
   which_samples <- which_samples[order(which_samples)]
   
   # transform into matrix to run e.divisive
