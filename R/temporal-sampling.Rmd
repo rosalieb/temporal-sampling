@@ -35,7 +35,8 @@ editor_options:
 - Here, we develop a set of tools to ... We first investigate these tools using a simulated-based apporach. We then apply these tools to the detection of change points for a set of lakes...
 
 - In paleo studies, if we cannot sample continously, we would sometimes chose to sample at regular intervals (e.g., every 5 cm). Would an iterative approach be more effective in detecting major changes?
-- Limitations: right now we are detecting changes on a single vector (in ecological dataset, it would be for example a PC axis). We talked about how a user could sample, e.g., 5 samples, and then decide where to add some samples, depending on when the change was detected. However, the PC ordination will be done depending on the community structure. Are we including a bias by doing that?
+- Limitations: right now we are detecting changes on a single vector (in ecological dataset, it would be for example a PC axis). We talked about how a user could sample, e.g., 5 samples, and then decide where to add some samples, depending on when the change was detected. However, the PC ordination will be done depending on the community structure. Are we including a bias by doing that? ==> The script Rosalie initially worked on computed the PCA post first change.
+- Note: if the result is really impacted by the ordination, we could have here an important warning, i.e., the sampling really restrict the message. Which would not be new at all, but not demonstrated with data to my knowledge. And for people working on temporal ecology, this would be an interesting paper to refer to (we can talk more about it during our work session). Other point: what happens if the transition is right at the beginning or end of the record?
 
 # Methods and results
 
@@ -73,10 +74,10 @@ library(reshape)
 
 ```{r read zurich data, include=T}
 zh <- read.delim(paste0(getpath4data(),"ZH17_21_clado.txt")); is.zh=T
-zh2 <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt")); is.zh=F
-zh3 <- cbind(zh, matrix(rep(0,nrow(zh)*(ncol(zh)-1)), nrow(zh)))
-zh3 <- rbind(zh3, cbind(matrix(c(1700:1710), rep(0,10*(ncol(zh)-1))),unlist(as.vector(zh2[1:10,-1]))) )
-zh<-zh3
+# zh2 <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt")); is.zh=F
+# zh3 <- cbind(zh, matrix(rep(0,nrow(zh)*(ncol(zh)-1)), nrow(zh)))
+# zh3 <- rbind(zh3, cbind(matrix(c(1700:1710), rep(0,10*(ncol(zh)-1))),unlist(as.vector(zh2[1:10,-1]))) )
+# zh<-zh3
 ```
 
 ## Study site
