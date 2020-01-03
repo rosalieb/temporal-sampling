@@ -18,7 +18,7 @@ sample_random <- function(x, n)
   if(is.null(n)) n <- length(x)
   
   # Sample n samples from initial x
-  which_samples <- sample(x, n)
+  which_samples <- sample(1:length(x), n)
   which_samples <- which_samples[order(which_samples)]
   
   x2 <- matrix(c(which_samples,x[which_samples]), ncol=2)
