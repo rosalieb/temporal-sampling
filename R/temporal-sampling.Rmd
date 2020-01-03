@@ -253,10 +253,11 @@ We then explored how each of these model components affected our ability to dete
 
 source('R/uncertainty_tolerance.R')
 
-build_time_series <- function(mu=0,sigma=5,phi=0.5,shift_size=25,shift_time=50,max_time=100){
+build_time_series <- function(mu=0,sigma=2,phi=0.5,shift_size=25,shift_time=50,max_time=100){
   
   ar1 <- vector(mode = 'numeric',max_time)
   ar1[1] <- 100
+  shift_time = sample(5:95,size = 1)
   for (t in 2:max_time){
     if(t == shift_time){ar1[t-1]=(ar1[1]-shift_size)}
     ar1[t] <- ar1[t-1] + phi*rnorm(1,mean=mu,sd = sigma)
@@ -282,7 +283,7 @@ output %>%
   plot(ylab='Probability correct',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(0,1))
 
 
-sample_size=10
+sample_size=20
 params <- tibble(sigma=rep(seq(0.1,20,0.1),10))
 
 output <- params %>%
@@ -358,92 +359,10 @@ The probability of correcting identifying a changepoint, of course, depends stro
 
 
 ```{r different_methods, fig.cap='Theoretical results here',message=F,warning=F,echo=F}
-# 4(or 6?) panel plot
+
+# Need to build a single plot comparing the three methods - look at probability of detection versus sample size... We would do this for a set of default parameters
 
 
-par(mfrow=c(1,1))
-# Sigma plot
-sample_size=10
-params <- tibble(sigma=rep(seq(0.1,20,0.1),100))
-
-output <- params %>%
-  pmap(build_time_series) %>%
-  map_dbl(function(df) ut(y=df, sample_size = sample_size, threshold_error = 5, each = 1, type="mean",random_sampling = F,convergence_sampling = F,regular_sampling = T)$regular_cptmean$same_cpt) %>%
-  mutate(params,detection=.)
-
-output %>%
-  group_by(sigma) %>%
-  summarize(prob_correct = sum(detection==1)/length(sigma/unique(sigma))) %>%
-  plot(ylab='Probability correct',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(0,1))
-
-
-sample_size=10
-params <- tibble(sigma=rep(seq(0.1,20,0.1),10))
-
-output <- params %>%
-  pmap(build_time_series) %>%
-  map_dbl(function(df) ut(y=df, sample_size = 20, threshold_error = 5, each = 1, type="mean",random_sampling = F,convergence_sampling = F,regular_sampling = T)$regular_cptmean$same_cpt) %>%
-  mutate(params,detection=.)
-
-output %>%
-  group_by(sigma) %>%
-  summarize(prob_correct = sum(detection==1)/length(sigma/unique(sigma))) %>%
-  points(ylab='Probability correct',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(0,1),col='red')
-
-
-# phi plot
-params <- tibble(phi=rep(seq(-1,1,0.01),100))
-
-output <- params %>%
-  pmap(build_time_series) %>%
-  map_dbl(function(df) ut(y=df, sample_size = sample_size, threshold_error = 3, each = 1, type="mean",random_sampling = F,convergence_sampling = F,regular_sampling = T)$regular_cptmean$same_cpt) %>%
-  mutate(params,detection=.)
-
-output %>%
-  group_by(phi) %>%
-  summarize(prob_correct = sum(detection==1)/length(phi/unique(phi))) %>%
-  plot(ylab='Probability correct',xlab='phi',pch=16,cex.lab=1.3,las=1,ylim=c(0,1))
-
-
-# shift_size plot
-params <- tibble(shift_size=rep(seq(1,95,0.5),100))
-
-output <- params %>%
-  pmap(build_time_series) %>%
-  map_dbl(function(df) ut(y=df, sample_size = sample_size, threshold_error = 3, each = 1, type="mean",random_sampling = F,convergence_sampling = F,regular_sampling = T)$regular_cptmean$same_cpt) %>%
-  mutate(params,detection=.)
-
-output %>%
-  group_by(shift_size) %>%
-  summarize(prob_correct = sum(detection==1)/length(shift_size/unique(shift_size))) %>%
-  plot(ylab='Probability correct',xlab='shift size',pch=16,cex.lab=1.3,las=1,ylim=c(0,1))
-
-
-# Shift timing plot
-params <- tibble(shift_time=rep(seq(5,90,1),100))
-
-output <- params %>%
-  pmap(build_time_series) %>%
-  map_dbl(function(df) ut(y=df, sample_size = sample_size, threshold_error = 3, each = 1, type="mean",random_sampling = F,convergence_sampling = F,regular_sampling = T)$regular_cptmean$same_cpt) %>%
-  mutate(params,detection=.)
-
-output %>%
-  group_by(shift_time) %>%
-  summarize(prob_correct = sum(detection==1)/length(shift_time/unique(shift_time))) %>%
-  plot(ylab='Probability correct',xlab='Shift timing',pch=16,cex.lab=1.3,las=1,ylim=c(0,1))
-
-
-
-
-
-
-
-
-#params <- tibble(phi=rep(seq(-1,1,0.01),1),shift_size=rep(30,201))
-#output <- params %>%
-#  pmap(build_time_series)
-#plot(output[[1]],type='l')
-#points(output[[15]],type='l')
 ```
 
 
