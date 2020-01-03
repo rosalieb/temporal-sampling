@@ -10,8 +10,8 @@
 #'
 
 sample_random <- function(x, n, messages = T)
-  .sample_regular(x, n, messages)
-.sample_regular <- function(x, n, messages) {
+  .sample_random(x, n, messages)
+.sample_random <- function(x, n, messages) {
   require(ecp)
   require(zoo)
   
