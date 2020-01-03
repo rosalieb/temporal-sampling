@@ -9,9 +9,9 @@
 #' @examples 
 #'
 
-sample_regular <- function(x, n)
-  .sample_regular(x, n)
-.sample_regular <- function(x, n) {
+sample_regular <- function(x, n, messages = T)
+  .sample_regular(x, n, messages)
+.sample_regular <- function(x, n, messages) {
   require(ecp)
   
   if(!is.vector(x)) stop("x is required and must be a vector")
@@ -27,7 +27,7 @@ sample_regular <- function(x, n)
   changepoints <- e.divisive(x2, min.size = 2)
   
   # Print the main changepoint
-  print(which_samples[changepoints$order.found[3]])
+  if(messages) print(which_samples[changepoints$order.found[3]])
   
   # More elaborated output
   out_list <- list()
