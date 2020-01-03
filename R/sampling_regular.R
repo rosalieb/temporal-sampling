@@ -10,7 +10,7 @@
 #'
 
 sample_regular <- function(x, n)
-  .sample_regular
+  .sample_regular(x, n)
 .sample_regular <- function(x, n) {
   require(ecp)
   
@@ -22,7 +22,21 @@ sample_regular <- function(x, n)
   which_samples <- round(which_samples)
   which_samples <- which_samples[order(which_samples)]
   
-  x2 <- matrix(c(which_samples,x[which_samples]), ncol=2)
+  x2 <- matrix(x[which_samples], ncol=1)
   
-  return(e.divisive(x2)$estimates[-1])
+  changepoints <- e.divisive(x2, min.size = 2)
+  
+  # Print the main changepoint
+  print(which_samples[changepoints$order.found[3]])
+  
+  # More elaborated output
+  out_list <- list()
+      out_list$changepoint <- which_samples[changepoints$order.found[3]]
+  out_list$changepoint_all <- changepoints
+           out_list$matrix <- data.frame("index"=which_samples,"x"=x2)
+  
+  invisible(out_list)
+           
 } 
+
+
