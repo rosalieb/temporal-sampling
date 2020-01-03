@@ -31,13 +31,14 @@ sample_random <- function(x, n, messages = T)
   changepoints <- e.divisive(x2, min.size = 2)
   
   # Print the main changepoint
-  if(messages) print(which_samples[changepoints$order.found[3]])
+  if(messages) print(changepoints$order.found[3])
   
   # More elaborated output
-  out_list <- list()
-  out_list$changepoint <- which_samples[changepoints$order.found[3]]
+                  out_list <- list()
+      out_list$changepoint <- changepoints$order.found[3]
+          out_list$final_n <- length(which_samples)
   out_list$changepoint_all <- changepoints
-  out_list$matrix <- data.frame("index"=which_samples,"x"=x2)
+           out_list$matrix <- data.frame("index"=which_samples,"x"=x[which_samples])
   
   invisible(out_list)
 } 
