@@ -50,6 +50,13 @@ Because of new technological advances, there are many data sources that can be d
 
 - Here, we develop a set of tools to determine the appropriate number of samples and sampling approach when dealing with data sources where additional samples can be added. We first investigate these tools using a simulated-based apporach. We then apply these tools to the detection of change points for a set of lakes...
 
+# Which sampling strategies are available?
+
+- Random
+- Regular
+- Iterative
+
+<img src="Fig_conceptual.pdf" alt="conceptual figure"  width="4200" height="6200">
 
 # Theoretical results
 
