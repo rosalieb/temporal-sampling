@@ -119,7 +119,7 @@ pol_break(cpt = cp_iterative, col=2)
 lines(mydata, col="black", lwd=1.5)
 axis(1, lwd=2, at = c(-10,120))
 axis(2, lwd=2, at = c(-1,2))
-points(cp_iterative$matrix$index, cp_iterative$matrix$x, pch=4)
+points(cp_iterative$matrix$index, cp_iterative$matrix$x, pch=4, lwd=2)
 text(100,0.95,labels = paste0("n = ",cp_iterative$final_n), pos = 2)
 mtext("g. Iterative sampling (final)", side = 3, line = 1, adj = 0, font=1, cex=cex_titles)
 
