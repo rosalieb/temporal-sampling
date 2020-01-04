@@ -55,6 +55,7 @@ sample_regular <- function(x, n, messages = T, input_vector = T, xcol = NA, DCA_
   
   # More elaborated output
                            out_list <- list()
+                    out_list$method <- "Regular"
                out_list$changepoint <- changepoints$order.found[3]
                    out_list$final_n <- length(which_samples)
            out_list$changepoint_all <- changepoints

@@ -108,6 +108,7 @@ sample_iterative <- function(x, n, n2 = 5, messages = T, input_vector = T, xcol 
   
   # More elaborated output
                            out_list <- list()
+                    out_list$method <- "Iterative"
                out_list$changepoint <- changepoints$order.found[3]
                    out_list$final_n <- length(which_samples)
            out_list$changepoint_all <- changepoints
