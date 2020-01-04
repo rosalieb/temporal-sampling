@@ -42,13 +42,13 @@ Environmental monitoring is one of the core components to modern research and ma
 
 - Idea of detecting change over time
 
-One of the primary goals of monitoring programs is to detect long-term ecological change. 
+One of the primary goals of monitoring programs is to detect long-term ecological change...
 
 - Historical data and ability to choose how much to sample
 
 Because of new technological advances, there are many data sources that can be derived long after the actual  processes occured. For example, paleoecological lake cores can be extracted and ecological communities can be built from this... Similarly, samples for eDNA or videographical approaches can record time points of a system and be analyzed later (citations). In each of these cases, decisions have to made about how much data to extract from the previously collected samples. Should the paleo core be analyzed at every centimeter? Should the video be assessed at every minute? As long as analyzing samples is expensive, these tradeoffs will remain.
 
-- Here, we develop a set of tools to determine the appropriate number of samples and sampling approach when dealing with data sources where additional samples can be added. We first investigate these tools using a simulated-based apporach. We then apply these tools to the detection of change points for a set of lakes...
+Here, we develop a set of tools to determine the appropriate number of samples and sampling approach when dealing with data sources where additional samples can be added. We first investigate these tools using a simulated-based apporach. We then apply these tools to the detection of change points for a set of lakes...
 
 # Which sampling strategies are available?
 
@@ -65,6 +65,18 @@ Because of new technological advances, there are many data sources that can be d
 - explain the analysis we will do
 - explain the theoretical model results with a figure
 - explain effect of different sampling strategies in this context
+
+We began with a theoretical exploration of the determiners of sampling required to detect a changepoint. We modeled a simple AR-1 process with a response variable that represents either population size, biodiversity, or some metric of community composition. The model includes temporal variability ($\sigma$), autocorrelation ($\phi$), the size of the shift ($\delta$), and a specific time when the shift occured ($\tau$):
+
+$$
+\mbox{Model here - need pair of equations}
+$$
+
+We then explored how each of these model components affected our ability to detect a change point. We simulate an entire time series (the "true" data for comparison), but we also examine the effect of not sampling every year. We specifically study how the amount of samples included and the type of sampling affects the detection probability. 
+
+In line with theory about monitoring, we found that the probability of correcting identifying a changepoint decreased with larger levels of population variability ($\\sigma$) and autocorrelation ($\\phi$). We also found that the probability of correct changepoint detection increases with larger shift sizes. 
+
+The probability of correcting identifying a changepoint, of course, depends strongly on the number of samples. 
 
 
 # Lake case study
