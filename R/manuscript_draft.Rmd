@@ -19,6 +19,10 @@ editor_options:
   df_print: paged
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = dirname(getwd()))
+```
+
 
 # Things to do:
 
@@ -80,6 +84,31 @@ The probability of correcting identifying a changepoint, of course, depends stro
 
 
 # Lake case study
+
+```{r case study read data output, include=FALSE}
+myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese.txt"))
+myoutput$method_f <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterative'))
+
+```
+
+With the iterative method, we found the main changepoint with maximum 9 samples analyzed, with a starting point of 5 randomly distributed samples.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(gridExtra)
+p1 <- ggplot(myoutput, aes(final_n,diff_real)) + 
+  geom_point(alpha = .3) +
+  facet_wrap(~method_f) + theme_bw() +
+  labs(title="a",x="", y="Distance to real changepoint")
+p2 <- ggplot(myoutput, aes(rep(0, nrow(myoutput)),diff_real))  +
+  facet_wrap(~method_f) + 
+  geom_violin() +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize=.3) + 
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) + theme_bw() +
+  labs(title="b",x="", y="Distance to real changepoint")
+grid.arrange(p1, p2, nrow = 2)
+```
 
 
 # Discussion
