@@ -83,7 +83,16 @@ In line with theory about monitoring, we found that the probability of correctin
 The probability of correcting identifying a changepoint, of course, depends strongly on the number of samples. 
 
 
-# Lake case study
+# Case study
+
+We tested the three sampling methods on a real community time-series, from Lake Varese (IT). Lake Varese is a small (14.8 km^2^), deep (z<sub>max</sub>= 26 m), monomictic lake, in the subalpine region of north-western Italy (238 m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed (ref). Nutrient status was responsible for restructuration of the lake communities across trophic levels (e.g., Ceccuzi et al 2011, Bruel et al, 2018). Air temperature is now driving changes in plankton communities (Bruel et al, 2018).
+
+Data are reconstructed cladoceran assemblage from a 74-cm sediment core (VAR10-10) covering the 1816(±26)—2010 period. Half of VAR 10.10 was sliced at a 1-cm interval and was used to count cladoceran remains (Bruel et al, 2018). We defined the "true" changepoint as the one identified from the complete record, in 1983/1988. 
+We used the same ordination method as in Bruel et al (2018), but note that DCA is best used to conserve multiple gradients. As a result, several changepoints were detected on the first component (in 1926/1928, 1946/1948 and 1983/1988). We conducted the analysis on the second component as well, where only one changepoint was detected (in 1944/1946).
+
+We used the full record (74 observation) and subsampled following the three strategies described earlier (random, regular, iterative), varrying the maximum number analyzed from 5 to 15.
+
+Random sampling perform the worst, as changepoint analysis was left to chance. Regular sampling provided good estimates from 8 samples (0-2 sample of absolute error). Iterative sample, where 5 samples are initially sampled, then other samples are slowly added, performed the best, as no more than 9 samples were ever necesserary to get the true changepoint
 
 ```{r case study read data output, include=FALSE}
 myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese.txt"))
@@ -91,7 +100,6 @@ myoutput$method_f <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iter
 
 ```
 
-With the iterative method, we found the main changepoint with maximum 9 samples analyzed, with a starting point of 5 randomly distributed samples.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(ggplot2)
@@ -112,5 +120,8 @@ grid.arrange(p1, p2, nrow = 2)
 
 
 # Discussion
+
+Case study: With the iterative method, we found the main changepoint with maximum 9 samples analyzed, with a starting point of 5 randomly distributed samples. Same results for the major change, with only 12% of the samples analyzed. However, need more samples to detect further changes. __Note that it would be possible to edit the function to go ahead and detect next changes once the main one has been detected. Is it worth coding? Shouldn't be too hard to do__
+
 
 # References
