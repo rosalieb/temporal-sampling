@@ -241,9 +241,9 @@ $$
 \mbox{Model here - need pair of equations}
 $$
 
-We then explored how each of these model components affected our ability to detect a change point. We simulate an entire time series, but we also examine the effect of not sampling every year. We specifically study how the amount of samples included and the type of sampling affects the detection probability. In particular, we examine three types of sampling: random, regular, and iterative. 
+We then explored how each of these model components affected our ability to detect a change point. We simulate an entire time series (the "true" data for comparison), but we also examine the effect of not sampling every year. We specifically study how the amount of samples included and the type of sampling affects the detection probability. In particular, we examine three types of sampling: random, regular, and iterative. 
 
-```{r theoretical_results, fig.cap='Theoretical results here',message=F,warning=F,echo=F}
+```{r old_theoretical_results, fig.cap='Theoretical results here',message=F,warning=F,echo=F,eval=F}
 # 4(or 6?) panel plot
 ## Example time series
 ## Changepoint detection vs number of samples - maybe just stick with regular sampling
@@ -353,6 +353,23 @@ output %>%
 #points(output[[15]],type='l')
 ```
 
+```{r theoretical_results, fig.cap='Theoretical results here',message=F,warning=F,echo=F,eval=F}
+
+source('R/sampling_regular.R')
+source('R/build_time_series.R')
+source('R/updated_param_sensitivity.R')
+
+require(tidyverse)
+
+par(mfrow=c(2,2))
+# Sigma plot
+sample_size=10
+
+sigma15 <- param_sensitivity('sigma',15)
+
+plot(sigma15,ylab='Probability correct',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(0,1),col=1)
+
+```
 
 In line with theory about monitoring, we found that the probability of correcting identifying a changepoint decreased with larger levels of population variability ($\\sigma$) and autocorrelation ($\\phi$). We also found that the probability of correct changepoint detection increases with larger shift sizes. 
 
