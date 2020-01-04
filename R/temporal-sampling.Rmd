@@ -220,15 +220,7 @@ boxplot(out_convergence_cptmean$number_sample_added ~ out_convergence_cptmean$sa
 ```
 
 
-# Theoretical results
-
-We began with a theoretical exploration of the determiners of sampling required to detect a changepoint. We modeled a simple AR-1 process with a response variable that represents either population size, biodiversity, or some metric of community composition. The model includes temporal variability ($\sigma$), autocorrelation ($\phi$), the size of the shift ($\delta$), and a specific time when the shift occured ($\tau$):
-
-$$
-\mbox{Model here - need pair of equations}
-$$
-
-We then explored how each of these model components affected our ability to detect a change point. We simulate an entire time series (the "true" data for comparison), but we also examine the effect of not sampling every year. We specifically study how the amount of samples included and the type of sampling affects the detection probability. In particular, we examine three types of sampling: random, regular, and iterative. 
+ 
 
 ```{r old_theoretical_results, fig.cap='Theoretical results here',message=F,warning=F,echo=F,eval=F}
 # 4(or 6?) panel plot
@@ -365,9 +357,6 @@ points(phi20,ylab='Probability correct',xlab='phi',pch=15,cex.lab=1.3,las=1,ylim
 
 ```
 
-In line with theory about monitoring, we found that the probability of correcting identifying a changepoint decreased with larger levels of population variability ($\\sigma$) and autocorrelation ($\\phi$). We also found that the probability of correct changepoint detection increases with larger shift sizes. 
-
-The probability of correcting identifying a changepoint, of course, depends strongly on the number of samples. 
 
 
 ```{r different_methods, fig.cap='Theoretical results here',message=F,warning=F,echo=F}
