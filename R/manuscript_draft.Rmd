@@ -60,7 +60,11 @@ Here, we develop a set of tools to determine the appropriate number of samples a
 - Regular
 - Iterative
 
-<img src="Fig_conceptual.pdf" alt="conceptual figure"  width="4200" height="6200">
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=7.5}
+source(paste0(getwd(),"/R/Fig_conceptual.R"))
+
+```
+
 
 # Theoretical results
 

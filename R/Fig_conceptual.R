@@ -1,7 +1,13 @@
+R_U_KNITTING=T
+
+source(paste0(getwd(),"/R/build_time_series.R"))
+source(paste0(getwd(),"/R/sampling_regular.R"))
+source(paste0(getwd(),"/R/sampling_random.R"))
+source(paste0(getwd(),"/R/sampling_iterative.R"))
+
 library(wesanderson)
 mypal <- wes_palette("Chevalier1")
 
-ar1
 ar1 <- build_time_series()
 mydata <- (ar1 - min(ar1))/(max(ar1) - min(ar1))
 
@@ -18,7 +24,7 @@ pol_break <- function(cpt, col=1, y1=-.2, y2=1.2) {
   polygon(pol_x, pol_y, col= adjustcolor(mycol, alpha.f = .3), density = NULL, border = NA)
 }
 
-pdf(paste0(getwd(),"/Output/Fig_conceptual.pdf"), fonts = "Helvetica")
+if(!R_U_KNITTING) pdf(paste0(getwd(),"/Output/Fig_conceptual.pdf"), fonts = "Helvetica")
 
 layout(matrix(c(1,2,0,
          3,4,5,
@@ -123,4 +129,4 @@ points(cp_iterative$matrix$index, cp_iterative$matrix$x, pch=4, lwd=2)
 text(100,0.95,labels = paste0("n = ",cp_iterative$final_n), pos = 2)
 mtext("g. Iterative sampling (final)", side = 3, line = 1, adj = 0, font=1, cex=cex_titles)
 
-dev.off()
+if(!R_U_KNITTING) dev.off()
