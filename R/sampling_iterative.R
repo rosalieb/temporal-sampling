@@ -15,8 +15,8 @@
 #'
 
 sample_iterative <- function(x, n, n2 = 5, messages = T, input_vector = T, xcol = NA, DCA_axis = 1)
-  .sample_iterative(x, n, messages, input_vector, xcol, DCA_axis)
-.sample_iterative <- function(x, n, messages, input_vector, xcol, DCA_axis) {
+  .sample_iterative(x, n, n2, messages, input_vector, xcol, DCA_axis)
+.sample_iterative <- function(x, n, n2, messages, input_vector, xcol, DCA_axis) {
   require(ecp)
   require(zoo)
   require(vegan)
