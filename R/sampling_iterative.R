@@ -118,6 +118,4 @@ sample_iterative <- function(x, n, n2 = 5, messages = T, input_vector = T, xcol 
   invisible(out_list)
 } 
 
-test <- sample_iterative(ar1, n = 10)
-e.divisive(matrix(test$matrix$x), min.size = 2)$order.found[3]
 
