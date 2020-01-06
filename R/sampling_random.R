@@ -43,7 +43,7 @@ sample_random <- function(x, n, messages = T, input_vector = T, xcol = NA, DCA_a
   # transform into matrix to run e.divisive
   x2 <- matrix(c(1:lastpoint,rep(NA,lastpoint)), ncol=2)
   if(input_vector) x2[which_samples,2] <- x[which_samples] else x2[which_samples,2] <- x
-  x2[,2] <- na.locf(x2[,2])
+  if(any(is.na(x2[,2]))) x2[,2] <- na.locf(x2[,2])
   x2 <- matrix(x2[,2])
   
   changepoints <- e.divisive(x2, min.size = 2)
