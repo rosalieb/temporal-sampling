@@ -1,34 +1,87 @@
 ---
-title: "Sampling requirements to detect ecosystem change"
-author: "Rosalie Bruel and Easton White"
-date: "03/10/2019"
-output:
-  html_document:
-    df_print: paged
-    fig_caption: yes
-    number_sections: yes
-    toc: yes
-    toc_depth: 3
-    toc_float: yes
-  pdf_document:
-    toc: yes
-    toc_depth: '3'
-fontsize: 11pt
+bibliography: Whitebib.bib
+csl: ecology-letters.csl
 editor_options:
   chunk_output_type: console
-  df_print: paged
+fontsize: 12pt
+geometry: margin=1in
+header-includes: \usepackage{float} \usepackage{lineno} \usepackage{setspace}\doublespacing
+  \usepackage[round]{natbib} \bibpunct[; ]{(}{)}{,}{a}{}{,} \usepackage{color} \usepackage{totcount}
+  \newtotcounter{citenum} \def\oldcite{} \let\oldcite=\bibcite \def\bibcite{\stepcounter{citenum}\oldcite}
+output:
+  pdf_document:
+    fig_caption: yes
+    keep_tex: yes
+    number_sections: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_knit$set(root.dir = dirname(getwd()))
 ```
 
+Title: Sampling requirements to detect ecosystem change
+	
+\vspace{7 mm}
+	
+Authors: Rosalie Bruel and Easton R. White
+	
+\vspace{5 mm}
+	
+Addresses: \normalsize{\indent $^{1}$Department of Biology, University of Vermont, VT 05405, USA}
+
+\vspace{5 mm}
+Keywords: {time-series} \vspace{10 mm}
+	
+\vspace{5 mm}
+
+	
+Number of words: XXXX \vspace{5 mm}
+	
+Number of references: 
+	
+Number of figures and panels: X
+	
+\vspace{5 mm}
+	
+Submission as: 
+	
+\vspace{5 mm}
+	
+Preprint available at: 
+
+
+\clearpage
+
+
+\begin{center}
+\textbf{\Large Title here}
+\vspace{7 mm}
+	
+Authors: \textsc{Rosalie Bruel and Easton R. White}
+\vspace{5 mm}
+
+Addresses: {\indent $^{1}$Department of Biology, University of Vermont, VT 05405, USA}
+
+\end{center}
+
+\textbf{Abstract}
+
+Abstract here
+
+\vspace{3 mm}
+
+Keywords: {time series}
+
+
+
+
+
 
 # Things to do:
 
 - writing intro
 - writing methods/results pair of section
-- writing dicussion
+- writing discussion
 - setting up bibliography system
 - Possible journals: Methods Ecology and Evolution, Biological Conservation, *Journal of Environmental Management*, *Environmental Monitoring and Assessment*, BioScience 
 
@@ -40,19 +93,14 @@ knitr::opts_knit$set(root.dir = dirname(getwd()))
 
 # Introduction and setup
 
-- Set up ideas about monitoring and cost of monitoring
 
-Environmental monitoring is one of the core components to modern research and management (citations). However, many monitoring programs are expensive and time-consuming (citations). Therefore, an optimal...
+Environmental monitoring is one of the core components to modern research and management (citations). Within an adaptive management framework, monitoring is needed for both learning about the system under study and assessing the effectiveness of management interventions (citations). Increasingly, long-term monitoring programs, like the Long Term Ecological Research (LTER) Network in the USA, are becoming available (Magurran2010). However, environmental monitoring is still often expensive and time-consuming (citations). Therefore, monitoring programs need to be designed in such a way to address the question of interest. Key considerations of an optimal monitoring program include the frequency of surveys, the selection of sites, as well as the precision and accuracy of the monitoring itself (citation). Monitoring programs also need to be designed to be cost-effective given limited bugets (citations). 
 
-- Idea of detecting change over time
+Accounting for these considerations in the design of a monitoring program is necessary to detect long-term ecological change. The specifics of the monitoring program will determine the power with which a question of interest can be addressed. For example, @White2019 found that 72\% of vertebrate populations required at least 10 years of monitoring to detect significant changes in the population size over time. Other work has focused on the frequency of monitoring (citations), the allocation of resources spatially versus temporally (citations), and the ability to use citizen science to increase monitoring (citations). Lastly, both the ecological and economical costs of failing to detect a true trend (type II error) have to be weighed against the risks of false (type I error) detection (citation).
 
-One of the primary goals of monitoring programs is to detect long-term ecological change...
+Because of new technological advances, there are many data sources that can be derived long after the actual  processes occurred. For example, paleoecological lake cores can be extracted and historical ecological communities can be reconstructured (citations from Rosalie). Similarly, environmental samples (e.g. water, soil) can be saved with eDNA processed later (citation). Similarly, video-graphical approaches can record snapshots of a system and be analyzed later (citations). In each of these cases, decisions have to made about how much data to extract from the previously collected samples. Should the paleoecological core be analyzed at every centimeter? Should the video be assessed at every minute? As long as processsing samples is expensive, these trade-offs will remain.
 
-- Historical data and ability to choose how much to sample
-
-Because of new technological advances, there are many data sources that can be derived long after the actual  processes occured. For example, paleoecological lake cores can be extracted and ecological communities can be built from this... Similarly, samples for eDNA or videographical approaches can record time points of a system and be analyzed later (citations). In each of these cases, decisions have to made about how much data to extract from the previously collected samples. Should the paleo core be analyzed at every centimeter? Should the video be assessed at every minute? As long as analyzing samples is expensive, these tradeoffs will remain.
-
-Here, we develop a set of tools to determine the appropriate number of samples and sampling approach when dealing with data sources where additional samples can be added. We first investigate these tools using a simulated-based apporach. We then apply these tools to the detection of change points for a set of lakes...
+Here, we develop a set of tools to determine the appropriate number of samples and sampling approach when dealing with data sources where additional samples can be added. We focus on paleoecological core samples as one example of this type of data. We examine the situation where the goal is to detect the time at which a significant change in an ecological community occurs, a changepoint. However, our approaches are widely applicable to other questions and data types. We first investigate these tools using a simulated-based approach to As a case study, we apply these tools to the detection of change points for a set of lakes. (more from Rosalie here).
 
 # Which sampling strategies are available?
 
@@ -60,7 +108,7 @@ Here, we develop a set of tools to determine the appropriate number of samples a
 - Regular
 - Iterative
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=7.5}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=7.5,eval=T,fig.cap='Conceptual figure for... \\label{fig:conceptual}'}
 source(paste0(getwd(),"/R/Fig_conceptual.R"))
 
 ```
@@ -74,7 +122,7 @@ source(paste0(getwd(),"/R/Fig_conceptual.R"))
 - explain the theoretical model results with a figure
 - explain effect of different sampling strategies in this context
 
-We began with a theoretical exploration of the determiners of sampling required to detect a changepoint. We modeled a simple AR-1 process with a response variable that represents either population size, biodiversity, or some metric of community composition. The model includes temporal variability ($\sigma$), autocorrelation ($\phi$), the size of the shift ($\delta$), and a specific time when the shift occured ($\tau$):
+We began with a theoretical exploration of the determiners of sampling required to detect a changepoint. We modeled a simple AR-1 process with a response variable that represents either population size, biodiversity, or some metric of community composition. The model includes temporal variability ($\sigma$), autocorrelation ($\phi$), the size of the shift ($\delta$), and a specific time when the shift occurred ($\tau$):
 
 $$
 \mbox{Model here - need pair of equations}
@@ -89,23 +137,23 @@ The probability of correcting identifying a changepoint, of course, depends stro
 
 # Case study
 
-We tested the three sampling methods on a real community time-series, from Lake Varese (IT). Lake Varese is a small (14.8 km^2^), deep (z<sub>max</sub>= 26 m), monomictic lake, in the subalpine region of north-western Italy (238 m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed (ref). Nutrient status was responsible for restructuration of the lake communities across trophic levels (e.g., Ceccuzi et al 2011, Bruel et al, 2018). Air temperature is now driving changes in plankton communities (Bruel et al, 2018).
+We tested the three sampling methods on a real community time-series, from Lake Varese (IT). Lake Varese is a small (14.8 km^2^), deep (z<sub>max</sub>= 26m), monomictic lake, in the subalpine region of north-western Italy (238m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed (ref). Nutrient status was responsible for restructuration of the lake communities across trophic levels (e.g., Ceccuzi et al 2011, Bruel et al, 2018). Air temperature is now driving changes in plankton communities (Bruel et al, 2018).
 
 Data are reconstructed cladoceran assemblage from a 74-cm sediment core (VAR10-10) covering the 1816(±26)—2010 period. Half of VAR 10.10 was sliced at a 1-cm interval and was used to count cladoceran remains (Bruel et al, 2018). We defined the "true" changepoint as the one identified from the complete record, in 1983/1988. 
 We used the same ordination method as in Bruel et al (2018), but note that DCA is best used to conserve multiple gradients. As a result, several changepoints were detected on the first component (in 1926/1928, 1946/1948 and 1983/1988). We conducted the analysis on the second component as well, where only one changepoint was detected (in 1944/1946).
 
 We used the full record (74 observation) and subsampled following the three strategies described earlier (random, regular, iterative), varrying the maximum number analyzed from 5 to 15.
 
-Random sampling perform the worst, as changepoint analysis was left to chance. Regular sampling provided good estimates from 8 samples (0-2 sample of absolute error). Iterative sample, where 5 samples are initially sampled, then other samples are slowly added, performed the best, as no more than 9 samples were ever necesserary to get the true changepoint
+Random sampling perform the worst, as changepoint analysis was left to chance. Regular sampling provided good estimates from 8 samples (0-2 sample of absolute error). Iterative sample, where 5 samples are initially sampled, then other samples are slowly added, performed the best, as no more than 9 samples were ever necessary to get the true changepoint
 
-```{r case study read data output, include=FALSE}
+```{r case study read data output, include=FALSE,eval=F}
 myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese.txt"))
 myoutput$method_f <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterative'))
 
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE,eval=F}
 library(ggplot2)
 library(gridExtra)
 p1 <- ggplot(myoutput, aes(final_n,diff_real)) + 
@@ -127,5 +175,6 @@ grid.arrange(p1, p2, nrow = 2)
 
 Case study: With the iterative method, we found the main changepoint with maximum 9 samples analyzed, with a starting point of 5 randomly distributed samples. Same results for the major change, with only 12% of the samples analyzed. However, need more samples to detect further changes. __Note that it would be possible to edit the function to go ahead and detect next changes once the main one has been detected. Is it worth coding? Shouldn't be too hard to do__
 
+\clearpage
 
 # References
