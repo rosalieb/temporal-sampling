@@ -154,14 +154,14 @@ We used the full record (74 observation) and subsampled following the three stra
 
 Random sampling perform the worst, as changepoint analysis was left to chance. Regular sampling provided good estimates from 8 samples (0-2 sample of absolute error). Iterative sample, where 5 samples are initially sampled, then other samples are slowly added, performed the best, as no more than 9 samples were ever necessary to get the true changepoint
 
-```{r case study read data output, include=FALSE,eval=F}
+```{r case study read data output, include=FALSE}
 myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese.txt"))
 myoutput$method_f <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterative'))
 
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE,eval=F}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(ggplot2)
 library(gridExtra)
 p1 <- ggplot(myoutput, aes(final_n,diff_real)) + 
