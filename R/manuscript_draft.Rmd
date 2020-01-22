@@ -122,7 +122,7 @@ source(paste0(getwd(),"/R/Fig_conceptual.R"))
 
 We hypothesize  that random sampling will perform the worst at getting as close as possible to a "real" changepoint. 
 
-# Theoretical results
+# Theoretical approach
 
 - explain the modeling approach
 - show the model
@@ -130,15 +130,57 @@ We hypothesize  that random sampling will perform the worst at getting as close 
 - explain the theoretical model results with a figure
 - explain effect of different sampling strategies in this context
 
-We began with a theoretical exploration of the determiners of sampling required to detect a changepoint. We modeled a simple AR-1 process with a response variable that represents either population size, biodiversity, or some metric of community composition. The model includes temporal variability ($\sigma$), autocorrelation ($\phi$), the size of the shift ($\delta$), and a specific time when the shift occurred ($\tau$):
+Theoretical plots
+
+- One combined plot to see the effect (on prob correct or number of samples) of each parameter - should do this with one of the three types of sampling (probably regular)
+- Theoretical plot comparing the three different methods - we could choose one set of parameter values and show how the various methods perform with different sampling amounts (could use same plot structure as the case study)
+- SM plot that shows how the three different methods are affected by changes in the underlying parameter values
+
+## Theoretical model
+
+We began with a theoretical exploration of the sampling requirements to detect a changepoint. We modeled a simple first order autoregressive (AR-1) process with a response variable that represents either population size, biodiversity, or some metric of community composition. The model includes temporal autocorrelation ($\phi$), the mean of the process ($\mu_X$), and a white noise term ($w_t$). The white noise term is a normal distribution with mean ($\mu_w$) and variance ($\sigma$).
 
 $$
-\mbox{Model here - need pair of equations}
+\begin{array}{rcl} 
+X_t & = & \mu_X + \phi (X_{t-1} - \mu_X) + w_t \\ 
+w_t & \sim & Norm(\mu_w,\sigma)
+\end{array}
 $$
+We included a changepoint by shifting $\mu_X$ at time $\tau$ given a specific shift size ($\delta$).
 
-We then explored how each of these model components affected our ability to detect a change point. We simulate an entire time series (the "true" data for comparison), but we also examine the effect of not sampling every year. We specifically study how the amount of samples included and the type of sampling affects the detection probability. 
+We explored how each of these model parameters affected our ability to detect a change point. We simulate an entire time series (the "true" data for comparison), but we also examine the effect of not sampling every year. We specifically study how the amount of samples included and the type of sampling affects the detection probability. 
 
-In line with theory about monitoring, we found that the probability of correcting identifying a changepoint decreased with larger levels of population variability ($\\sigma$) and autocorrelation ($\\phi$). We also found that the probability of correct changepoint detection increases with larger shift sizes. 
+
+```{r theoretical_results, fig.cap='Theoretical results here detailing parameter sensitivity - we should make this about sample size instead of probability correct',message=F,warning=F,echo=F,eval=F}
+
+source('R/sampling_regular.R')
+source('R/build_time_series.R')
+source('R/updated_param_sensitivity.R')
+
+require(tidyverse)
+
+par(mfrow=c(2,2))
+# Sigma plot
+sigma15 <- param_sensitivity('sigma',15)
+plot(sigma15,ylab='Probability correct',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(0,1),col=1)
+
+sigma20 <- param_sensitivity('sigma',20)
+points(sigma20,ylab='Probability correct',xlab='sigma',pch=15,cex.lab=1.3,las=1,ylim=c(0,1),col=3)
+
+# phi plot
+phi15 <- param_sensitivity('phi',15)
+plot(phi15,ylab='Probability correct',xlab='phi',pch=16,cex.lab=1.3,las=1,ylim=c(0,1),col=1)
+
+phi20 <- param_sensitivity('phi',20)
+points(phi20,ylab='Probability correct',xlab='phi',pch=15,cex.lab=1.3,las=1,ylim=c(0,1),col=3)
+
+```
+
+
+
+## Theoretical results 
+
+In line with theory about monitoring, we found that the probability of correcting identifying a changepoint decreased with larger levels of population variability ($\sigma$) and autocorrelation ($\phi$). We also found that the probability of correct changepoint detection increases with larger shift sizes. 
 
 The probability of correcting identifying a changepoint, of course, depends strongly on the number of samples. 
 
