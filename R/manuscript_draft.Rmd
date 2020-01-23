@@ -203,7 +203,7 @@ myoutput$method_f <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iter
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 9}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 8}
 library(ggplot2)
 library(gridExtra)
 p1 <- ggplot(myoutput[myoutput$target_cpt==1,], aes(final_n,diff_real, pch=factor(n2_init))) + 
@@ -211,7 +211,7 @@ p1 <- ggplot(myoutput[myoutput$target_cpt==1,], aes(final_n,diff_real, pch=facto
   geom_point(alpha = .3) +
   facet_wrap(~method_f) + theme_bw() +
   labs(title="a. First changepoint",x="", y="Distance to real changepoint") +
-  theme(legend.position = c(0.95, 0.6),
+  theme(legend.position = c(0.93, 0.6),
         legend.background = element_rect(fill = "#ffffffaa", colour = NA),
         legend.title=element_text(size=7), 
         legend.text=element_text(size=8)) +
@@ -221,7 +221,7 @@ p2 <- ggplot(myoutput[myoutput$target_cpt==2,], aes(final_n,diff_real, pch=facto
   geom_point(alpha = .3) +
   facet_wrap(~method_f) + theme_bw() +
   labs(title="b. Second changepoint",x="", y="Distance to real changepoint") +
-  theme(legend.position = c(0.95, 0.6),
+  theme(legend.position = c(0.93, 0.6),
         legend.background = element_rect(fill = "#ffffffaa", colour = NA),
         legend.title=element_text(size=7), 
         legend.text=element_text(size=8)) +
@@ -231,12 +231,11 @@ p3 <- ggplot(myoutput[myoutput$target_cpt==3,], aes(final_n,diff_real, pch=facto
   geom_point(alpha = .3) +
   facet_wrap(~method_f) + theme_bw() +
   labs(title="c. Third changepoint",x="", y="Distance to real changepoint") +
-  theme(legend.position = c(0.95, 0.6),
+  theme(legend.position = c(0.93, 0.6),
         legend.background = element_rect(fill = "#ffffffaa", colour = NA),
         legend.title=element_text(size=7), 
         legend.text=element_text(size=8)) +
   guides(pch=guide_legend(title="Initial number\nof sample"))
-p3
 grid.arrange(p1,p2,p3,nrow=3)
 ```
 
