@@ -23,11 +23,11 @@ Title: Sampling requirements to detect ecosystem change
 	
 \vspace{7 mm}
 	
-Authors: Rosalie Bruel and Easton R. White
+Authors: Rosalie Bruel$^{1}$ and Easton R. White$^{2}$
 	
 \vspace{5 mm}
 	
-Addresses: \normalsize{\indent $^{1}$Department of Biology, University of Vermont, VT 05405, USA}
+Addresses: \normalsize{\indent $^{1}$Rubenstein Ecosystem Science Laboratory, University of Vermont, VT 05405, USA \\ $^{2}$Department of Biology, University of Vermont, VT 05405, USA}
 
 \vspace{5 mm}
 Keywords: {time-series} \vspace{10 mm}
@@ -57,11 +57,10 @@ Preprint available at:
 \textbf{\Large Title here}
 \vspace{7 mm}
 	
-Authors: \textsc{Rosalie Bruel and Easton R. White}
+Authors: \textsc{Rosalie Bruel$^{1}$ and Easton R. White$^{2}$}
 \vspace{5 mm}
 
-Addresses: {\indent $^{1}$Department of Biology, University of Vermont, VT 05405, USA}
-
+Addresses: \normalsize{\indent $^{1}$Rubenstein Ecosystem Science Laboratory, University of Vermont, VT 05405, USA \\ $^{2}$Department of Biology, University of Vermont, VT 05405, USA}
 \end{center}
 
 \textbf{Abstract}
@@ -94,7 +93,7 @@ Keywords: {time series}
 # Introduction and setup
 
 
-Environmental monitoring is one of the core components to modern research and management (citations). Within an adaptive management framework, monitoring is needed for both learning about the system under study and assessing the effectiveness of management interventions (citations). Increasingly, long-term monitoring programs, like the Long Term Ecological Research (LTER) Network in the USA, are becoming available (Magurran2010). However, environmental monitoring is still often expensive and time-consuming (citations). Therefore, monitoring programs need to be designed in such a way to address the question of interest. Key considerations of an optimal monitoring program include the frequency of surveys, the selection of sites, as well as the precision and accuracy of the monitoring itself (citation). Monitoring programs also need to be designed to be cost-effective given limited bugets (citations). 
+Environmental monitoring is one of the core components to modern research and management (citations). Within an adaptive management framework, monitoring is needed for both learning about the system under study and assessing the effectiveness of management interventions (Lovett et al, 2007). Increasingly, long-term monitoring programs, like the Long Term Ecological Research (LTER) Network in the USA, are becoming available (Magurran2010). However, environmental monitoring is still often expensive and time-consuming (citations). Therefore, monitoring programs need to be designed in such a way to address the question of interest. Key considerations of an optimal monitoring program include the frequency of surveys, the selection of sites, as well as the precision and accuracy of the monitoring itself (citation). Monitoring programs also need to be designed to be cost-effective given limited bugets (citations). 
 
 
 Methods to dectect change overtime: see summary https://lindeloev.github.io/mcp/articles/packages.html
@@ -187,9 +186,13 @@ The probability of correcting identifying a changepoint, of course, depends stro
 
 # Case study
 
-We tested the three sampling methods on a real community time-series, from Lake Varese (IT). Lake Varese is a small (14.8 km^2^), deep (z<sub>max</sub>= 26m), monomictic lake, in the subalpine region of north-western Italy (238m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed (ref). Nutrient status was responsible for restructuration of the lake communities across trophic levels (e.g., Ceccuzi et al 2011, Bruel et al, 2018). Air temperature is now driving changes in plankton communities (Bruel et al, 2018).
+An application of our study we foresee applies to paleosequences. Sediment cores are taken from aquatic environment to reconstruct past ecosystems, in order to extend our perspective on ecosystem trajectories. Samples can be taken before and after perturbation to compare community compostion (e.g., ), or at continuously to identify the timing of change, and contribution of environmental variable in driving these changes (e.g., @perga_high-resolution_2015).
 
-Data are reconstructed cladoceran assemblage from a 74-cm sediment core (VAR10-10) covering the 1816(±26)—2010 period. Half of VAR 10.10 was sliced at a 1-cm interval and was used to count cladoceran remains (Bruel et al, 2018). We defined the "true" changepoint as the one identified from the complete record, in 1983/1988. 
+Maybe extent to paleo science in general? see review by Wingard et al 2017 https://www.frontiersin.org/articles/10.3389/fevo.2017.00011/full#B140
+
+We tested the three sampling methods on a real community time-series, from Lake Varese (IT). Lake Varese is a small (14.8 km^2^), deep (z$_{max}$= 26m), monomictic lake, in the subalpine region of north-western Italy (238 m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed (ref). Nutrient status was responsible for restructuration of the lake communities across trophic levels (e.g., Ceccuzi et al 2011, @bruel_seeking_2018). Air temperature is now driving changes in plankton communities (@bruel_seeking_2018).
+
+Cladoceran assemblage was reconstructed at a 2-3 years resolution, from a 74-cm sediment core (VAR10-10) covering the 1816(±26)—2010 period (@bruel_seeking_2018). We defined the "true" changepoint as the one identified from the complete record, in 1983/1988. 
 Changepoints were detected on first component computed from the data sub-sampled. We used the same ordination method as in Bruel et al (2018), but note that DCA is best used to conserve multiple gradients. As a result, several changepoints were detected on the first component (in 1926/1928, 1946/1948 and 1983/1988). We conducted the analysis on the second component as well, where only one changepoint was detected (in 1944/1946).
 
 We used the full record (74 observation) and subsampled following the three strategies described earlier (random, regular, iterative), varrying the maximum number analyzed from 5 to 15. Iterative sampling final number could be lower than maximum number if both samples framing the shift were analyzed.
@@ -248,6 +251,10 @@ Case study: With the iterative method, we found the main changepoint with maximu
 \clearpage
 
 Limits: Systematic sampling of a time-series is required to detect critical slowing-down or early warning of shifts (ref, maybe among others Frossard et al 2015, Doncaster et al 2016). The lower number of input data prior to ordination did not impact the finding of the main transition. However, if other metrics are of interest to the investigators, such as species richness, a more systematic or at least more extensive approach would be require.
+
+
+About recommendation to reduce the frequency of data collected as part of monitoring program:  
+While long-term monitoring program are often expensive, these cost are nothing compared to the value of the resources monitored and the policies affecting these resources (@lovett_who_2007). Monitoring programs should try to anticipate the potential questions of tomorrow, and reducing the data collected must be done with the best foresight possible on how these data may indeed not be necessary to manage ecosystems in the future.  
 
 
 # References
