@@ -57,10 +57,10 @@ Preprint available at:
 \textbf{\Large Title here}
 \vspace{7 mm}
 	
-Authors: \textsc{Rosalie Bruel$^{1}$ and Easton R. White$^{2}$}
+\textsc{Rosalie Bruel$^{1}$ and Easton R. White$^{2}$}
 \vspace{5 mm}
 
-Addresses: \normalsize{\indent $^{1}$Rubenstein Ecosystem Science Laboratory, University of Vermont, VT 05405, USA \\ $^{2}$Department of Biology, University of Vermont, VT 05405, USA}
+\normalsize{\indent $^{1}$Rubenstein Ecosystem Science Laboratory, University of Vermont, VT 05405, USA \\ $^{2}$Department of Biology, University of Vermont, VT 05405, USA}
 \end{center}
 
 \textbf{Abstract}
@@ -147,12 +147,13 @@ w_t & \sim & Norm(\mu_w,\sigma)
 $$
 We included a changepoint by shifting $\mu_X$ at time $\tau$ given a specific shift size ($\delta$).
 
-We explored how each of these model parameters affected our ability to detect a change point. We simulate an entire time series (the "true" data for comparison), but we also examine the effect of not sampling every year. We specifically study how the amount of samples included and the type of sampling affects the detection probability. 
+We explored how each of these model parameters affected our ability to detect a change point. We simulate an entire time series (the "true" data for comparison), but we also examine the effect of not sampling every year. We specifically study how the amount of samples included and the type of sampling affects the detection probability. For simulations, statistical power is the fraction of simulations that were able to detect a changepoint. We define a detection as an estimate within five time points (over 100 time points) of the true changepoint. We define $T_{min}$ as the minimum number of samples required to achieve 0.8 statistical power.
 
 
-```{r theoretical_results, fig.cap='Theoretical results here detailing parameter sensitivity - we should make this about sample size instead of probability correct',message=F,warning=F,echo=F,eval=F}
+```{r theoretical_results,message=F,warning=F,echo=F,eval=F}
 
 source('R/sampling_regular.R')
+source('R/sampling_random.R')
 source('R/build_time_series.R')
 source('R/updated_param_sensitivity.R')
 
@@ -176,49 +177,75 @@ points(phi20,ylab='Probability correct',xlab='phi',pch=15,cex.lab=1.3,las=1,ylim
 ```
 
 
-```{r theoretical_results_min_time, fig.cap='Theoretical results here detailing parameter sensitivity - we should make this about sample size instead of probability correct',message=F,warning=F,echo=F,eval=T}
+```{r theoretical_results_min_time,message=F,warning=F,echo=F,eval=F}
 
 source('R/sampling_regular.R')
 source('R/build_time_series.R')
 source('R/updated_param_sensitivity.R')
 source('R/calc_min_time2.R')
-
 require(tidyverse)
 
-par(mfrow=c(1,3))
-# Sigma plot
-sigma_vec = seq(0.1,20,1)
-min_time=NULL
+# Sigma results
+sigma_vec = seq(0.1,30,4)
+min_time  = rep(0,times=length(sigma_vec))
+sigma_output <- data.frame(sigma_vec,min_time)
 
-for (param_num in 1:length(sigma_vec)){
-  min_time = c(min_time,calc_min_time('sigma',sigma_vec[param_num]))
-  print(min_time)
+for (param_num in 1:nrow(sigma_output)){
+  sigma_output$min_time[param_num] <- calc_min_time('sigma',sigma_output$sigma_vec[param_num])
+  #print(sigma_output)
 }
 
-plot(sigma_vec,min_time,ylab='Number of samples required',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(0,25),col=1)
+write.csv(x = sigma_output,file = 'Output/theoretical_results_sigma.csv',quote=FALSE)
 
+# Phi results
 
+phi_vec = seq(-0.6,0.6,0.2)
+min_time  = rep(0,times=length(phi_vec))
+phi_output <- data.frame(phi_vec,min_time)
 
-phi_vec = seq(-1,1,0.2)
-min_time=NULL
-
-for (param_num in 1:length(phi_vec)){
-  min_time = c(min_time,calc_min_time('phi',phi_vec[param_num]))
+for (param_num in 1:nrow(phi_output)){
+  phi_output$min_time[param_num] <- calc_min_time('phi',phi_output$phi_vec[param_num])
+  #print(phi_output)
 }
 
-plot(phi_vec,min_time,ylab='Number of samples required',xlab='phi',pch=16,cex.lab=1.3,las=1,ylim=c(0,1),col=1)
+write.csv(x = phi_output,file = 'Output/theoretical_results_phi.csv',quote=FALSE)
 
 
 # Shift size
 
-shift_size_vec = seq(0.05,0.95,0.1)
-min_time=NULL
+shift_size_vec = rev(seq(0.1,0.9,0.05))
+min_time  = rep(0,times=length(shift_size_vec))
+shift_size_output <- data.frame(shift_size_vec,min_time)
 
-for (param_num in 1:length(shift_size_vec)){
-  min_time = c(min_time,calc_min_time('shift_size',shift_size_vec[param_num]))
+for (param_num in 1:nrow(shift_size_output)){
+  shift_size_output$min_time[param_num] <- calc_min_time('shift_size',shift_size_output$shift_size_vec[param_num])
+  #print(shift_size_output)
 }
 
-plot(shift_size_vec,min_time,ylab='Number of samples required',xlab='shift size (percent)',pch=16,cex.lab=1.3,las=1,ylim=c(0,1),col=1)
+write.csv(x = shift_size_output,file = 'Output/theoretical_results_shift_size.csv',quote=FALSE)
+
+
+```
+
+
+```{r theoretical_results_min_time_plot, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. The default parameters are $\\sigma = 3$, $\\phi = 0.5$, and a shift size $=0.75$. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. \\label{fig:theoretical_min_time}',message=F,warning=F,echo=F,eval=T}
+
+par(mfrow=c(1,3))
+
+sigma <- read.csv('Output/theoretical_results_sigma.csv',header=TRUE)
+plot(sigma$sigma_vec,sigma$min_time,ylab='Minimum number of samples required',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(0,40),col=1)
+
+
+# Phi results
+
+phi <- read.csv('Output/theoretical_results_phi.csv',header=TRUE)
+plot(phi$phi_vec,phi$min_time,ylab=' ',xlab='phi',pch=16,cex.lab=1.3,las=1,ylim=c(0,40),col=1)
+
+
+# Shift size results
+
+shift_size <- read.csv('Output/theoretical_results_shift_size.csv',header=TRUE)
+plot(shift_size$shift_size_vec,shift_size$min_time,ylab=' ',xlab='shift size',pch=16,cex.lab=1.3,las=1,ylim=c(0,40),col=1)
 
 
 ```
@@ -227,9 +254,8 @@ plot(shift_size_vec,min_time,ylab='Number of samples required',xlab='shift size 
 
 ## Theoretical results 
 
-In line with theory about monitoring, we found that the probability of correcting identifying a changepoint decreased with larger levels of population variability ($\sigma$) and autocorrelation ($\phi$). We also found that the probability of correct changepoint detection increases with larger shift sizes. 
+In line with theory about monitoring, we found that the probability of correcting identifying a changepoint decreased with smaller levels of population variability ($\sigma$) and autocorrelation ($\phi$). We also found that the probability of correct changepoint detection increases with larger shift sizes, which is essentially the effect size. Thus, the number of sample required to obtain high statistical power (above 0.8) increased with larger population variability, lower autocorrelation, and smaller shift sizes (Fig. \ref{fig:theoretical_min_time}).
 
-The probability of correcting identifying a changepoint, of course, depends strongly on the number of samples. 
 
 
 # Case study
@@ -292,14 +318,29 @@ grid.arrange(p1,p2,p3,nrow=3)
 
 __Main point__: Changepoint was detected even though we used a transformed vector (from community to first component of DCA) 
 
-# Discussion
+# General Discussion
+
+Outline:
+
+- theoretical results
+- example with the case study
+- how this fits in with other work
+- limitations and future work
 
 Case study: With the iterative method, we found the main changepoint with maximum 9 samples analyzed, with a starting point of 5 randomly distributed samples. Same results for the major change, with only 12% of the samples analyzed. However, need more samples to detect further changes. __Note that it would be possible to edit the function to go ahead and detect next changes once the main one has been detected. Is it worth coding? Shouldn't be too hard to do__
 
 \clearpage
 
-Limits: Systematic sampling of a time-series is required to detect critical slowing-down or early warning of shifts (ref, maybe among others Frossard et al 2015, Doncaster et al 2016). The lower number of input data prior to ordination did not impact the finding of the main transition. However, if other metrics are of interest to the investigators, such as species richness, a more systematic or at least more extensive approach would be require.
+Limitations:
 
+- It is not limited to paleo data
+- Depends on the question being asked
+- Specific number of samples depends on the system dynamics
+
+Systematic sampling of a time-series is required to detect critical slowing-down or early warning of shifts (ref, maybe among others Frossard et al 2015, Doncaster et al 2016). The lower number of input data prior to ordination did not impact the finding of the main transition. However, if other metrics are of interest to the investigators, such as species richness, a more systematic or at least more extensive approach would be require.
+
+
+Concluding paragraph:
 
 About recommendation to reduce the frequency of data collected as part of monitoring program:  
 While long-term monitoring program are often expensive, these cost are nothing compared to the value of the resources monitored and the policies affecting these resources (@lovett_who_2007). Monitoring programs should try to anticipate the potential questions of tomorrow, and reducing the data collected must be done with the best foresight possible on how these data may indeed not be necessary to manage ecosystems in the future.  
