@@ -353,7 +353,7 @@ p1 <- ggplot(myoutput[myoutput$target_cpt==1,], aes(final_n,diff_real, pch=facto
              labeller = label_glue('({.l}) {method} sampling ')) + 
   theme_bw() +
   labs(x="Total number of samples analyzed", y="Distance to real changepoint") +
-  theme(legend.position = c(0.93, 0.75),
+  theme(legend.position = c(0.93, 0.72),
         legend.background = element_rect(fill = "#ffffffaa", colour = NA),
         legend.title=element_text(size=7), 
         legend.text=element_text(size=8)) +
@@ -365,7 +365,7 @@ p1
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height= 6.5, fig.cap='Iterative sampling and impact on ordination. (a) Full time series, on which "true" changepoint was detected. (b) First step of iterative sampling, n = 5. (c) Final step of iterative samples: by adding 4 samples, the true changepoint was detected. \\label{fig:case_study_iterative_sampling}'}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 8, fig.height= 7.5, fig.cap='Iterative sampling and impact on ordination. (a) Initial community dataset. Samples are initially sampled at regular interval. The multivariate data is converted to univariate vector by Detrended Component Analysis. Samples were iteratively added, after computation of changepoint at each step. (b) Full time series, on which "true" changepoint was detected. (c) First step of iterative sampling, n = 5. (d) Final step of iterative samples: by adding 4 samples, the true changepoint was detected. \\label{fig:case_study_iterative_sampling}'}
 
 getpath4data <- function() {
   if(Sys.getenv("USER")=="Rosalie") return("/Volumes/-/Script R/Data-off-GitHub/temporal-sampling/")
@@ -399,12 +399,12 @@ mypal <- wes_palette("GrandBudapest2", max(vr_out_order$count),type = "continuou
  p_init <- ggplot(vrall$matrix, aes(age, x)) + geom_point(alpha = .3) + geom_line(alpha = .3) +
   theme_bw()  +
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
-           geom_rect(mapping=aes(xmin=vrall$matrix$age[which(vrall$matrix$index==vrall$changepoint)-1], xmax=vrall$matrix$age[which(vrall$matrix$index==vrall$changepoint)], ymin=0, ymax=2), alpha=0.008, fill="grey") +
-   labs(subtitle = paste0("a. Full time-series, n = ", nrow(vr)), x="Year", y="DCA first component",
+           geom_rect(mapping=aes(xmin=vrall$matrix$age[which(vrall$matrix$index==vrall$changepoint)-1], xmax=vrall$matrix$age[which(vrall$matrix$index==vrall$changepoint)], ymin=-1, ymax=2), alpha=0.05, fill="grey") +
+   labs(subtitle = paste0("b. Full time-series, n = ", nrow(vr)), x="Year", y="DCA first component",
         color='samples added\nat iteration t=') +
    geom_point(vr_out_order, mapping=aes(age, x, color = as.factor(count)), cex=2) +
    geom_text(vr_out_order, mapping=aes(age, x, label =count), vjust = 1.5, nudge_x = 1.5) +
-   scale_color_manual(values=mypal)
+   scale_color_manual(values=mypal) 
 
 
 
@@ -447,15 +447,45 @@ for (i in 5:12) {
   }
 }
 
-p1 <- p1 + geom_rect(stat = "identity", mapping=aes(xmin=vrsub1$matrix$age[which(vrsub1$matrix$index==vrsub1$changepoint)-1], xmax=vrsub1$matrix$age[which(vrsub1$matrix$index==vrsub1$changepoint)], ymin=-1, ymax=3), col=NA, fill="grey", alpha=0.05) +
-  labs(subtitle="b. Initial number of samples, n = 5")
+p1 <- p1 + geom_line(vrsub1$matrix, mapping=aes(age, x), alpha = .8, col="black") + 
+          geom_point(vrsub1$matrix, mapping=aes(age, x,color=as.factor(count))) + geom_rect(stat = "identity", mapping=aes(xmin=vrsub1$matrix$age[which(vrsub1$matrix$index==vrsub1$changepoint)-1], xmax=vrsub1$matrix$age[which(vrsub1$matrix$index==vrsub1$changepoint)], ymin=-1, ymax=3), col=NA, fill="grey", alpha=0.05) +
+  labs(subtitle="c. Initial number of samples, n = 5")
 
-p2 <- p2 + geom_rect(stat = "identity", mapping=aes(xmin=vrsub$matrix$age[which(vrsub$matrix$index==vrsub$changepoint)-1], xmax=vrsub$matrix$age[which(vrsub$matrix$index==vrsub$changepoint)], ymin=-1, ymax=3), col=NA, fill="grey", alpha=0.05) +
-  labs(subtitle=paste0("c. n =", nrow(vrsub$matrix)))
+p2 <- p2 + geom_line(vrsub$matrix, mapping=aes(age, x), alpha = .8, col="black") + 
+          geom_point(vrsub$matrix, mapping=aes(age, x,color=as.factor(count))) + 
+  geom_rect(stat = "identity", mapping=aes(xmin=vrsub$matrix$age[which(vrsub$matrix$index==vrsub$changepoint)-1], xmax=vrsub$matrix$age[which(vrsub$matrix$index==vrsub$changepoint)], ymin=-1, ymax=3), col=NA, fill="grey", alpha=0.05) +
+  labs(subtitle=paste0("d. n =", nrow(vrsub$matrix)))
 
+
+# Fake dataset to explain sample selection
+fakedata <- data.frame(matrix(rep(NA,74*10), nrow=74))
+colnames(fakedata) <- 1:ncol(fakedata)
+fakedata[is.na(fakedata)] <- 0
+fakedata[vr_out_order$index[vr_out_order$count==1],] <- 1 
+fakedata[vr_out_order$index[vr_out_order$count==2],] <- 2 
+fakedata[vr_out_order$index[vr_out_order$count==3],] <- 3 
+fakedata[vr_out_order$index[vr_out_order$count==4],] <- 4 
+fakedata[vr_out_order$index[vr_out_order$count==5],] <- 5 
+fakedata[,1] <- 6
+fakedata <- rbind(rep(7,ncol(fakedata)),fakedata)
+library(reshape)
+fakedata <- cbind(Year=rep(75:1,ncol(fakedata)), melt(fakedata))
+head(fakedata)
+
+p3 <- ggplot(fakedata, aes(variable,Year)) +
+  geom_tile(aes(fill = as.factor(value)), colour="black") +
+  scale_fill_manual(values=c("white",mypal,grey(.8), grey(.8))) + guides(fill=FALSE)  + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_blank(), panel.background = element_blank(), axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank()) +
+  geom_text(fakedata[fakedata$Year==75,], mapping = aes(variable,Year, label=c("Year", paste("Sp.", 1:9))),  size=2.5,hjust=0,angle = 90) +
+  labs(subtitle="a. Continuous community dataset")
+
+# Assemble plot
 library(patchwork)
 
-p_init / p1 / p2
+ p3 | (p_init / p1 / p2)
+
 
 ```
 
