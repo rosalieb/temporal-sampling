@@ -348,7 +348,7 @@ p1 <- ggplot(myoutput[myoutput$target_cpt==1,], aes(final_n,diff_real, pch=facto
              labeller = label_glue('({.l}) {method} sampling ')) + 
   theme_bw() +
   labs(x="Total number of samples analyzed", y="Distance to real changepoint") +
-  theme(legend.position = c(0.93, 0.75),
+  theme(legend.position = c(0.93, 0.72),
         legend.background = element_rect(fill = "#ffffffaa", colour = NA),
         legend.title=element_text(size=7), 
         legend.text=element_text(size=8)) +
@@ -360,7 +360,7 @@ p1
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height= 6.5, fig.cap='Iterative sampling and impact on ordination. (a) Full time series, on which "true" changepoint was detected. (b) First step of iterative sampling, n = 5. (c) Final step of iterative samples: by adding 4 samples, the true changepoint was detected. \\label{fig:case_study_iterative_sampling}'}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 5, fig.height= 7, fig.cap='Iterative sampling and impact on ordination. (a) Full time series, on which "true" changepoint was detected. (b) First step of iterative sampling, n = 5. (c) Final step of iterative samples: by adding 4 samples, the true changepoint was detected. \\label{fig:case_study_iterative_sampling}'}
 
 getpath4data <- function() {
   if(Sys.getenv("USER")=="Rosalie") return("/Volumes/-/Script R/Data-off-GitHub/temporal-sampling/")
@@ -394,7 +394,7 @@ mypal <- wes_palette("GrandBudapest2", max(vr_out_order$count),type = "continuou
  p_init <- ggplot(vrall$matrix, aes(age, x)) + geom_point(alpha = .3) + geom_line(alpha = .3) +
   theme_bw()  +
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
-           geom_rect(mapping=aes(xmin=vrall$matrix$age[which(vrall$matrix$index==vrall$changepoint)-1], xmax=vrall$matrix$age[which(vrall$matrix$index==vrall$changepoint)], ymin=0, ymax=2), alpha=0.008, fill="grey") +
+           geom_rect(mapping=aes(xmin=vrall$matrix$age[which(vrall$matrix$index==vrall$changepoint)-1], xmax=vrall$matrix$age[which(vrall$matrix$index==vrall$changepoint)], ymin=-1, ymax=2), alpha=0.05, fill="grey") +
    labs(subtitle = paste0("a. Full time-series, n = ", nrow(vr)), x="Year", y="DCA first component",
         color='samples added\nat iteration t=') +
    geom_point(vr_out_order, mapping=aes(age, x, color = as.factor(count)), cex=2) +
