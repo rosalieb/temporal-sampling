@@ -324,7 +324,7 @@ We used the full record (74 observation) and subsampled following the three stra
 
 ## Case study results
 
-Random sampling perform the worst, as changepoint analysis was left to chance. Regular sampling provided good estimates from 8 samples (0-3 sample of absolute error), but detecting the true changepoint was left  to chance. Iterative sampling (Fig. \ref{fig:case_study_number_sample} (c)), where 5 samples are initially sampled, then other samples are slowly added, performed the best, as no more than 9 samples were ever necessary to get the true changepoint. Note that when the initial number of samples was set to 7 Fig. \ref{fig:case_study_number_sample} (c), square markers), the distance to the real changepoint was initially very high. Without any prior, the initial number sampled fell far away from the true changepoint. 
+Random sampling perform the worst, as changepoint analysis was left to chance. Regular sampling provided good estimates from 8 samples (0-3 sample of absolute error), but detecting the true changepoint was left  to chance. Iterative sampling (Fig. \ref{fig:case_study_number_sample} (c)), where 5 samples are initially sampled, then other samples are slowly added, performed the best, as no more than 9 samples were ever necessary to get the true changepoint. Fig. \ref{fig:case_study_iterative_sampling} further illustrates the iterative sampling. Note that when the initial number of samples was set to 7 Fig. \ref{fig:case_study_number_sample} (c), square markers), the distance to the real changepoint was initially very high. Without any prior, the initial number sampled fell far away from the true changepoint. 
 
 We tested how the three methods performed at detecting other changepoints (as three changepoints were detected in the initial study, @bruel_seeking_2018). Iterative sampling performed best, especially if an higher number of initial samples was chosen (7 samples out of 74, Supplementary Materials \textcolor{red}{2}).
 The initial number of samples should be chosen depending on the objective of the study. If investigators want to find the biggest transition only, then a low number might be enough (include here results from theoritical results?). If investigators suspect or want to test for several changepoints, we recommend analyzing initially about 10% of the length of the time serie to have a good initial ranking.
@@ -360,7 +360,7 @@ p1
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap='Iterative sampling and impact on ordination.  \\label{fig:case_study_iterative_sampling}'}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height= 6.5, fig.cap='Iterative sampling and impact on ordination. (a) Full time series, on which "true" changepoint was detected. (b) First step of iterative sampling, n = 5. (c) Final step of iterative samples: by adding 4 samples, the true changepoint was detected. \\label{fig:case_study_iterative_sampling}'}
 
 getpath4data <- function() {
   if(Sys.getenv("USER")=="Rosalie") return("/Volumes/-/Script R/Data-off-GitHub/temporal-sampling/")
@@ -370,9 +370,87 @@ getpath4data <- function() {
 # Read data
 vr <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt"))
 
-vrsub <- sample_iterative(vr, n=5, n2=5, input_vector = F, xcol = 1, DCA_axis = 1, messages = F)
+# Detect 'true' changepoint
+vrall <- sample_regular(vr, n=nrow(vr), input_vector = F, xcol = 1, DCA_axis = 1, messages = F)
+ vrall$matrix$age <- vr$AGE[vrall$matrix$index]
+
+# Creating a dataset with all scores 
+vr_out_matrix <- read.table(paste0(getwd(),"/Output/output_iterative_sampling_varese.txt"))
+
+index_temp <- vr_out_matrix$index[vr_out_matrix$n==max(vr_out_matrix$n)]
+vr_out_order <-
+  data.frame("index" = index_temp,
+             "age"   = vrall$matrix$age[index_temp],
+             "x"     = vrall$matrix$x[index_temp],
+             "count" = summary(as.factor(vr_out_matrix$index)))
+vr_out_order$count <- abs(vr_out_order$count-max(vr_out_order$count)-1)
+
+
+
+library(wesanderson)
+mypal <- wes_palette("GrandBudapest2", max(vr_out_order$count),type = "continuous")
+ 
+# Plot with all data
+ p_init <- ggplot(vrall$matrix, aes(age, x)) + geom_point(alpha = .3) + geom_line(alpha = .3) +
+  theme_bw()  +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
+           geom_rect(mapping=aes(xmin=vrall$matrix$age[which(vrall$matrix$index==vrall$changepoint)-1], xmax=vrall$matrix$age[which(vrall$matrix$index==vrall$changepoint)], ymin=0, ymax=2), alpha=0.008, fill="grey") +
+   labs(subtitle = paste0("a. Full time-series, n = ", nrow(vr)), x="Year", y="DCA first component",
+        color='samples added\nat iteration t=') +
+   geom_point(vr_out_order, mapping=aes(age, x, color = as.factor(count)), cex=2) +
+   geom_text(vr_out_order, mapping=aes(age, x, label =count), vjust = 1.5, nudge_x = 1.5) +
+   scale_color_manual(values=mypal)
+
+
+
+ 
+# Initial plot, then Adding samples
+for (i in 5:12) {
+  # Start a new loop only if the final changepoint hasn't been found at the previous iteration.  
+  if (i==5 || vrsub$matrix$index[vrsub$matrix$index==vrsub$changepoint] - vrsub$matrix$index[which(vrsub$matrix$index==vrsub$changepoint)-1]>1) {
+    
+  vrsub <- sample_iterative(vr, n=i, n2=5, input_vector = F, xcol = 1, DCA_axis = 1, messages = F)
+  vrsub$matrix$age <- vr$AGE[vrsub$matrix$index]
+  vrsub$matrix$count <- vr_out_order$count[vr_out_order$age %in% vrsub$matrix$age]
   
-sample_iterative()
+    if (i==5) {
+      vrsub1 <- vrsub
+    p1 <- ggplot(vrsub$matrix, aes(age, x, color=as.factor(count))) +  geom_line(alpha = .4, col="grey") + geom_point() + guides(col=FALSE) +
+   scale_color_manual(values=mypal) +
+  theme_bw() +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+   labs(x="Year", y="DCA first component",
+        color='samples added\nat iteration t=')
+    p2 <- p1
+  } else {
+    if (i == 6) {
+      p2 <- p1 + 
+        geom_line(vrsub$matrix, mapping=aes(age, x), alpha = .4, col="grey") + 
+        geom_point(vrsub$matrix, mapping=aes(age, x,color=as.factor(count)))   + guides(col=FALSE) 
+    } else {
+        p2 <- p2 + geom_line(vrsub$matrix, mapping=aes(age, x), alpha = .4, col="grey") + 
+          geom_point(vrsub$matrix, mapping=aes(age, x,color=as.factor(count))) + 
+          guides(col=FALSE)
+      }
+  }
+      # Save plot
+    ggsave(p2 + 
+             geom_rect(stat = "identity", mapping=aes(xmin=vrsub$matrix$age[which(vrsub$matrix$index==vrsub$changepoint)-1], xmax=vrsub$matrix$age[which(vrsub$matrix$index==vrsub$changepoint)], ymin=-1, ymax=3), col=NA, fill="grey", alpha=0.05) +
+             annotate("text", label = paste0("Number of samples = ",i), x = min(vrsub$matrix$age), y = 2.8, colour = "black",  hjust=0,vjust=0), 
+           filename = paste0("Output/GIF_adding_sample_case_study/Iterative_",i,".pdf"), width = 6, height = 4)
+
+  }
+}
+
+p1 <- p1 + geom_rect(stat = "identity", mapping=aes(xmin=vrsub1$matrix$age[which(vrsub1$matrix$index==vrsub1$changepoint)-1], xmax=vrsub1$matrix$age[which(vrsub1$matrix$index==vrsub1$changepoint)], ymin=-1, ymax=3), col=NA, fill="grey", alpha=0.05) +
+  labs(subtitle="b. Initial number of samples, n = 5")
+
+p2 <- p2 + geom_rect(stat = "identity", mapping=aes(xmin=vrsub$matrix$age[which(vrsub$matrix$index==vrsub$changepoint)-1], xmax=vrsub$matrix$age[which(vrsub$matrix$index==vrsub$changepoint)], ymin=-1, ymax=3), col=NA, fill="grey", alpha=0.05) +
+  labs(subtitle=paste0("c. n =", nrow(vrsub$matrix)))
+
+library(patchwork)
+
+p_init / p1 / p2
 
 ```
 
