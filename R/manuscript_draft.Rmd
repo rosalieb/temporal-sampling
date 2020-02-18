@@ -12,7 +12,7 @@ output:
   pdf_document:
     fig_caption: yes
     keep_tex: yes
-    number_sections: yes
+    number_sections: no
 ---
 
 ```{r setup, include=FALSE}
@@ -27,7 +27,7 @@ Authors: Rosalie Bruel$^{1}$ and Easton R. White$^{2}$
 	
 \vspace{5 mm}
 	
-Addresses: \normalsize{\indent $^{1}$Rubenstein Ecosystem Science Laboratory, University of Vermont, VT 05405, USA \\ $^{2}$Department of Biology, University of Vermont, VT 05405, USA}
+Addresses: $^{1}$Rubenstein Ecosystem Science Laboratory, University of Vermont, VT 05405, USA $^{2}$Department of Biology, University of Vermont, VT 05405, USA
 
 \vspace{5 mm}
 Keywords: {time-series} \vspace{10 mm}
@@ -75,7 +75,7 @@ Keywords: {time series}
 
 
 
-
+<!--
 # Things to do:
 
 - writing intro
@@ -84,13 +84,15 @@ Keywords: {time series}
 - setting up bibliography system
 - Possible journals: Methods Ecology and Evolution, Biological Conservation, *Journal of Environmental Management*, *Environmental Monitoring and Assessment*, BioScience 
 
+
 # Main messages of manuscript
 
 - We can choose the number of samples and effort we use...
 - Number of samples required depends on question asked and the time series parameters
 - Case study of paleo data shows the utility of iterative sampling in detecting change points
+--> 
 
-# Introduction and setup
+# Introduction 
 
 
 Environmental monitoring is one of the core components to modern research and management (citations). Within an adaptive management framework, monitoring is needed for both learning about the system under study and assessing the effectiveness of management interventions (Lovett et al, 2007). Increasingly, long-term monitoring programs, like the Long Term Ecological Research (LTER) Network in the USA, are becoming available (Magurran2010). However, environmental monitoring is still often expensive and time-consuming (citations). Therefore, monitoring programs need to be designed in such a way to address the question of interest. Key considerations of an optimal monitoring program include the frequency of surveys, the selection of sites, as well as the precision and accuracy of the monitoring itself (citation). Monitoring programs also need to be designed to be cost-effective given limited bugets (citations). 
@@ -106,23 +108,25 @@ Because of new technological advances, there are many data sources that can be d
 
 Here, we develop a set of tools to determine the appropriate number of samples and sampling approach when dealing with data sources where additional samples can be added. We focus on paleoecological core samples as one example of this type of data. We examine the situation where the goal is to detect the time at which a significant change in an ecological community occurs, a changepoint. However, our approaches are widely applicable to other questions and data types. We first investigate these tools using a simulated-based approach to As a case study, we apply these tools to the detection of change points for a set of lakes. (more from Rosalie here).
 
-# Which sampling strategies are available?
+# Sampling approaches and changepoint detection
 
+For both our simulations and case study, we investigate the effect of different sampling strategies on our ability to detect a changepoint. We begin by either creating simulated time series or using an actual paleoecological time series (Fig. \ref{fig:conceptual}). We then subsampled each time series (citation) to test the effect of three different sampling approaches along with varying the sample size (Fig. \ref{fig:conceptual}c-f). We compared the subsampled time series to the full time series as a measure of the effectiveness of that sampling approach.
 
-- Random
-- Regular
-- Iterative
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=7.5,eval=T,fig.cap='Conceptual figure for... \\label{fig:conceptual}'}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=7.5,eval=T,fig.cap='Conceptual diagram illustrating the process of taking (a) simulations of a time series and (b) selecting a single simulation to analyze with three different sampling approaches: (c) random, (d) regular, and (e) iterative. The iterative sampling approach requires (f) adding samples around a detected changepoint until (g) a certain level of accuracy is achieved. \\label{fig:conceptual}'}
 source(paste0(getwd(),"/R/Fig_conceptual.R"))
-
 ```
 
+The random sampling approach involves taking a set number of random points throughout the time series (Fig. \ref{fig:conceptual}c). In the context of sediment cores, this would mean analzying community composition as random spots along the core. We hypothesize that random sampling will perform the worst at getting as close as possible to a "real" changepoint. Regular sampling is commonly used (citations) and requires that a set number of samples be taken at regular intervals (Fig. \ref{fig:conceptual}d). Lastly, iterative sampling involves first taking a set number of samples and then iteratively adding samples until a pre-determined level of precision is achieved (Fig. \ref{fig:conceptual}e-g). 
 
-We hypothesize  that random sampling will perform the worst at getting as close as possible to a "real" changepoint. 
+Rosalie: Can you write a paragraph here detailing the changepoint detection process?
 
-# Theoretical approach
 
+
+
+
+# Simulation approach
+
+<!--
 - explain the modeling approach
 - show the model
 - explain the analysis we will do
@@ -134,6 +138,8 @@ Theoretical plots
 - One combined plot to see the effect (on prob correct or number of samples) of each parameter - should do this with one of the three types of sampling (probably regular)
 - Theoretical plot comparing the three different methods - we could choose one set of parameter values and show how the various methods perform with different sampling amounts (could use same plot structure as the case study)
 - SM plot that shows how the three different methods are affected by changes in the underlying parameter values
+
+-->
 
 ## Theoretical model
 
@@ -180,6 +186,7 @@ points(phi20,ylab='Probability correct',xlab='phi',pch=15,cex.lab=1.3,las=1,ylim
 ```{r theoretical_results_min_time,message=F,warning=F,echo=F,eval=F}
 
 source('R/sampling_regular.R')
+source('R/sampling_random.R')
 source('R/build_time_series.R')
 source('R/updated_param_sensitivity.R')
 source('R/calc_min_time2.R')
@@ -192,20 +199,20 @@ sigma_output <- data.frame(sigma_vec,min_time)
 
 for (param_num in 1:nrow(sigma_output)){
   sigma_output$min_time[param_num] <- calc_min_time('sigma',sigma_output$sigma_vec[param_num])
-  #print(sigma_output)
+  print(sigma_output)
 }
 
 write.csv(x = sigma_output,file = 'Output/theoretical_results_sigma.csv',quote=FALSE)
 
 # Phi results
 
-phi_vec = seq(-0.6,0.6,0.2)
+phi_vec = seq(-0.8,0.8,0.2)
 min_time  = rep(0,times=length(phi_vec))
 phi_output <- data.frame(phi_vec,min_time)
 
 for (param_num in 1:nrow(phi_output)){
   phi_output$min_time[param_num] <- calc_min_time('phi',phi_output$phi_vec[param_num])
-  #print(phi_output)
+  print(phi_output)
 }
 
 write.csv(x = phi_output,file = 'Output/theoretical_results_phi.csv',quote=FALSE)
@@ -213,13 +220,13 @@ write.csv(x = phi_output,file = 'Output/theoretical_results_phi.csv',quote=FALSE
 
 # Shift size
 
-shift_size_vec = rev(seq(0.1,0.9,0.05))
+shift_size_vec = rev(seq(0.1,0.9,0.025))
 min_time  = rep(0,times=length(shift_size_vec))
 shift_size_output <- data.frame(shift_size_vec,min_time)
 
 for (param_num in 1:nrow(shift_size_output)){
   shift_size_output$min_time[param_num] <- calc_min_time('shift_size',shift_size_output$shift_size_vec[param_num])
-  #print(shift_size_output)
+  print(shift_size_output)
 }
 
 write.csv(x = shift_size_output,file = 'Output/theoretical_results_shift_size.csv',quote=FALSE)
@@ -233,19 +240,19 @@ write.csv(x = shift_size_output,file = 'Output/theoretical_results_shift_size.cs
 par(mfrow=c(1,3))
 
 sigma <- read.csv('Output/theoretical_results_sigma.csv',header=TRUE)
-plot(sigma$sigma_vec,sigma$min_time,ylab='Minimum number of samples required',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(0,40),col=1)
+plot(sigma$sigma_vec,sigma$min_time,ylab='Minimum number of samples required',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(20,50),col=1,type='o')
 
 
 # Phi results
 
 phi <- read.csv('Output/theoretical_results_phi.csv',header=TRUE)
-plot(phi$phi_vec,phi$min_time,ylab=' ',xlab='phi',pch=16,cex.lab=1.3,las=1,ylim=c(0,40),col=1)
+plot(phi$phi_vec,phi$min_time,ylab=' ',xlab='phi',pch=16,cex.lab=1.3,las=1,ylim=c(20,50),col=1,type='o')
 
 
 # Shift size results
 
 shift_size <- read.csv('Output/theoretical_results_shift_size.csv',header=TRUE)
-plot(shift_size$shift_size_vec,shift_size$min_time,ylab=' ',xlab='shift size',pch=16,cex.lab=1.3,las=1,ylim=c(0,40),col=1)
+plot(shift_size$shift_size_vec,shift_size$min_time,ylab=' ',xlab='shift size',pch=16,cex.lab=1.3,las=1,ylim=c(20,50),col=1,type='o')
 
 
 ```
@@ -255,6 +262,50 @@ plot(shift_size$shift_size_vec,shift_size$min_time,ylab=' ',xlab='shift size',pc
 ## Theoretical results 
 
 In line with theory about monitoring, we found that the probability of correcting identifying a changepoint decreased with smaller levels of population variability ($\sigma$) and autocorrelation ($\phi$). We also found that the probability of correct changepoint detection increases with larger shift sizes, which is essentially the effect size. Thus, the number of sample required to obtain high statistical power (above 0.8) increased with larger population variability, lower autocorrelation, and smaller shift sizes (Fig. \ref{fig:theoretical_min_time}).
+
+
+```{r theoretical_results_sampling_approaches,message=F,warning=F,echo=F,eval=F}
+
+source('R/sampling_regular.R')
+source('R/sampling_random.R')
+source('R/build_time_series.R')
+source('R/updated_param_sensitivity.R')
+source('R/calc_min_time2.R')
+require(tidyverse)
+
+# Need to run each method on a set of simulated time series. We would then have 100 runs for each method and each sampling amount
+
+approach <- c('random')#,'regular','iterative')
+number_samples <- 5:30
+simulation_number <- 1:50
+output_theory_approach <- data.frame(expand.grid(approach,number_samples,simulation_number))
+names(output_theory_approach) <- c('approach', 'number_samples', 'simulation_number')
+output_theory_approach$distance_to_real = 0
+
+# Build function that takes in approach, simulated time series, and number of samples. The function should then spit out the distance to the real changepoint
+
+# Set of time series (need other params)
+params <- tibble(shift_time = sample(30:70,max(simulation_number),replace = T))
+
+time_series <- params %>%
+  pmap(build_time_series) 
+
+# Run through params
+
+for (i in 1:nrow(output_theory_approach)){
+  
+  output_theory_approach$distance_to_real[i] <- abs(params$shift_time[output_theory_approach$simulation_number[i]] - calc_distance_to_real(output_theory_approach$approach[i],output_theory_approach$number_samples[i],time_series[[output_theory_approach$simulation_number[i]]]))
+  #print(i)
+}
+
+
+write.csv(x = output_theory_approach,file = 'Output/theoretical_comparing_approaches.csv',quote = FALSE )
+```
+
+
+
+
+
 
 
 
@@ -317,6 +368,11 @@ grid.arrange(p1,p2,p3,nrow=3)
 ```
 
 __Main point__: Changepoint was detected even though we used a transformed vector (from community to first component of DCA) 
+
+
+
+
+
 
 # General Discussion
 
