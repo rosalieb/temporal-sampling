@@ -53,7 +53,7 @@ sample_iterative <- function(x, n, n2 = 5, c=1, messages = T, input_vector = T, 
   
   temp_chgpt <- e.divisive(x2, min.size = 2, sig.lvl = .7)$order.found[3:(2+c)]
   
-  if(all(is.na(temp_chgpt))) {
+  if(all(is.na(temp_chgpt)) && length(which_samples) < n ) {
     which_samples <- seq(1,2,lastpoint,length.out = n2*2-1)
     which_samples <- round(which_samples)
     which_samples <- which_samples[order(which_samples)]
@@ -79,32 +79,34 @@ sample_iterative <- function(x, n, n2 = 5, c=1, messages = T, input_vector = T, 
   # Now, start adding samples
   c_order = 1
   for(i in 1:(n-n2)) {
-    if (c_order<=c && !is.na(temp_chgpt[c_order])) {
-      # Here we only want to add sample if we haven't already found the closest changepoint
-      if(!round((which_samples[which(which_samples==temp_chgpt[c_order])-1]+which_samples[which(which_samples==temp_chgpt[c_order])])/2) %in% which_samples) {
-        which_samples <- c(which_samples, round((which_samples[which(which_samples==temp_chgpt[c_order])-1]+which_samples[which(which_samples==temp_chgpt[c_order])])/2))
-        which_samples <- which_samples[order(which_samples)]
-        
-        # Reset x
-        x <- x_stable
-        
-        # Do DCA to get only one vector if input is a data frame
-        if(!input_vector) {
-          x <- do_dca(x[which_samples,], xcol)
-          x <- x[,DCA_axis]
+    if (length(which_samples) < n) {
+      if (c_order<=c && !is.na(temp_chgpt[c_order])) {
+        # Here we only want to add sample if we haven't already found the closest changepoint
+        if(!round((which_samples[which(which_samples==temp_chgpt[c_order])-1]+which_samples[which(which_samples==temp_chgpt[c_order])])/2) %in% which_samples) {
+          which_samples <- c(which_samples, round((which_samples[which(which_samples==temp_chgpt[c_order])-1]+which_samples[which(which_samples==temp_chgpt[c_order])])/2))
+          which_samples <- which_samples[order(which_samples)]
+          
+          # Reset x
+          x <- x_stable
+          
+          # Do DCA to get only one vector if input is a data frame
+          if(!input_vector) {
+            x <- do_dca(x[which_samples,], xcol)
+            x <- x[,DCA_axis]
+          }
+          
+          # transform into matrix to run e.divisive
+          x2 <- matrix(c(1:lastpoint,rep(NA,lastpoint)), ncol=2)
+          if(input_vector) x2[which_samples,2] <- x[which_samples] else x2[which_samples,2] <- x
+          if(any(is.na(x2[,2]))) x2[,2] <- na.locf(x2[,2])
+          x2 <- matrix(x2[,2])
+          
+          temp_chgpt <- e.divisive(x2, min.size = 2, sig.lvl = .7)$order.found[3:(2+c)]
+        } else {
+          c_order = c_order + 1
         }
-        
-        # transform into matrix to run e.divisive
-        x2 <- matrix(c(1:lastpoint,rep(NA,lastpoint)), ncol=2)
-        if(input_vector) x2[which_samples,2] <- x[which_samples] else x2[which_samples,2] <- x
-        if(any(is.na(x2[,2]))) x2[,2] <- na.locf(x2[,2])
-        x2 <- matrix(x2[,2])
-        
-        temp_chgpt <- e.divisive(x2, min.size = 2, sig.lvl = .7)$order.found[3:(2+c)]
-      } else {
-        c_order = c_order + 1
-      }
-    } 
+      } 
+    }
   }
   
   changepoints <- e.divisive(x2, min.size = 2)
