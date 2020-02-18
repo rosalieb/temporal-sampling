@@ -35,7 +35,7 @@ sample_iterative <- function(x, n, n2 = 5, c=1, messages = T, input_vector = T, 
   if(is.null(n)) n <- lastpoint
   
   # Sample initial number of samples
-  which_samples <- seq(1,lastpoint,length.out = n2-2)
+  which_samples <- seq(1,lastpoint,length.out = n2)
   which_samples <- round(which_samples)
   which_samples <- which_samples[order(which_samples)]
   
