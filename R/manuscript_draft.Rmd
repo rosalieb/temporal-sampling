@@ -147,7 +147,7 @@ w_t & \sim & Norm(\mu_w,\sigma)
 $$
 We included a changepoint by shifting $\mu_X$ at time $\tau$ given a specific shift size ($\delta$).
 
-We explored how each of these model parameters affected our ability to detect a change point. We simulate an entire time series (the "true" data for comparison), but we also examine the effect of not sampling every year. We specifically study how the amount of samples included and the type of sampling affects the detection probability. For simulations, statistical power is the fraction of simulations that were able to detect a changepoint. We define a detection as an estimate within five time points (over 100 time points) of the true changepoint. We define $T_{min}$ as the minimum number of samples required to achieve 0.8 statistical power.
+We explored how each of these model parameters affected our ability to detect a change point. We simulate an entire time series (the "true" data for comparison), but we also examine the effect of not sampling every interval. We specifically study how the amount of samples included and the type of sampling affects the detection probability. For simulations, statistical power is the fraction of simulations that were able to detect a changepoint. We define a detection as an estimate within five time points (over 100 time points) of the true changepoint. We define $T_{min}$ as the minimum number of samples required to achieve 0.8 statistical power.
 
 
 ```{r theoretical_results,message=F,warning=F,echo=F,eval=F}
@@ -260,61 +260,71 @@ In line with theory about monitoring, we found that the probability of correctin
 
 # Case study
 
+## Case study background
+
 An application of our study we foresee applies to paleosequences. Sediment cores are taken from aquatic environment to reconstruct past ecosystems, in order to extend our perspective on ecosystem trajectories. Samples can be taken before and after perturbation to compare community compostion (e.g., ), or at continuously to identify the timing of change, and contribution of environmental variable in driving these changes (e.g., @perga_high-resolution_2015).
 
-Maybe extent to paleo science in general? see review by Wingard et al 2017 https://www.frontiersin.org/articles/10.3389/fevo.2017.00011/full#B140
-
-We tested the three sampling methods on a real community time-series, from Lake Varese (IT). Lake Varese is a small (14.8 km^2^), deep (z$_{max}$= 26m), monomictic lake, in the subalpine region of north-western Italy (238 m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed (ref). Nutrient status was responsible for restructuration of the lake communities across trophic levels (e.g., Ceccuzi et al 2011, @bruel_seeking_2018). Air temperature is now driving changes in plankton communities (@bruel_seeking_2018).
+We tested the three sampling methods on a real community time-series, from Lake Varese (IT). Lake Varese is a small (14.8 km^2^), deep (z$_{max}$= 26m), monomictic lake, in the subalpine region of north-western Italy (238 m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed (ref). Nutrient status was responsible for restructuration of the lake communities across trophic levels (e.g., Crosta 1999, @bruel_seeking_2018). Air temperature is now driving changes in plankton communities (@bruel_seeking_2018).
 
 Cladoceran assemblage was reconstructed at a 2-3 years resolution, from a 74-cm sediment core (VAR10-10) covering the 1816(±26)—2010 period (@bruel_seeking_2018). We defined the "true" changepoint as the one identified from the complete record, in 1983/1988. 
 Changepoints were detected on first component computed from the data sub-sampled. We used the same ordination method as in Bruel et al (2018), but note that DCA is best used to conserve multiple gradients. As a result, several changepoints were detected on the first component (in 1926/1928, 1946/1948 and 1983/1988). We conducted the analysis on the second component as well, where only one changepoint was detected (in 1944/1946).
 
 We used the full record (74 observation) and subsampled following the three strategies described earlier (random, regular, iterative), varrying the maximum number analyzed from 5 to 15. Iterative sampling final number could be lower than maximum number if both samples framing the shift were analyzed.
 
-Random sampling perform the worst, as changepoint analysis was left to chance. Regular sampling provided good estimates from 8 samples (0-2 sample of absolute error). Iterative sample, where 5 samples are initially sampled, then other samples are slowly added, performed the best, as no more than 9 samples were ever necessary to get the true changepoint
+## Case study results
+
+Random sampling perform the worst, as changepoint analysis was left to chance. Regular sampling provided good estimates from 8 samples (0-3 sample of absolute error), but detecting the true changepoint was left  to chance. Iterative sampling (Fig. \ref{fig:case_study_number_sample} (c)), where 5 samples are initially sampled, then other samples are slowly added, performed the best, as no more than 9 samples were ever necessary to get the true changepoint. Note that when the initial number of samples was set to 7 Fig. \ref{fig:case_study_number_sample} (c), square markers), the distance to the real changepoint was initially very high. Without any prior, the initial number sampled fell far away from the true changepoint. 
+
+We tested how the three methods performed at detecting other changepoints (as three changepoints were detected in the initial study, @bruel_seeking_2018). Iterative sampling performed best, especially if an higher number of initial samples was chosen (7 samples out of 74, Supplementary Materials \textcolor{red}{2}).
+The initial number of samples should be chosen depending on the objective of the study. If investigators want to find the biggest transition only, then a low number might be enough (include here results from theoritical results?). If investigators suspect or want to test for several changepoints, we recommend analyzing initially about 10% of the length of the time serie to have a good initial ranking.
+
 
 ```{r case study read data output, include=FALSE}
 myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese.txt"))
-myoutput$method_f <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterative'))
+myoutput$method <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterative'))
 
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 8}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Distance to real changepoint per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.  \\label{fig:case_study_number_sample}'}
 library(ggplot2)
-library(gridExtra)
+#devtools::install_github("rensa/stickylabeller")
+library(stickylabeller)
 p1 <- ggplot(myoutput[myoutput$target_cpt==1,], aes(final_n,diff_real, pch=factor(n2_init))) + 
   geom_hline(aes(yintercept=0), col=adjustcolor("black", alpha.f = .4)) + 
   geom_point(alpha = .3) +
-  facet_wrap(~method_f) + theme_bw() +
-  labs(title="a. First changepoint",x="", y="Distance to real changepoint") +
-  theme(legend.position = c(0.93, 0.6),
+  facet_wrap(~method,
+             labeller = label_glue('({.l}) {method} sampling ')) + 
+  theme_bw() +
+  labs(x="Total number of samples analyzed", y="Distance to real changepoint") +
+  theme(legend.position = c(0.93, 0.75),
         legend.background = element_rect(fill = "#ffffffaa", colour = NA),
         legend.title=element_text(size=7), 
         legend.text=element_text(size=8)) +
   guides(pch=guide_legend(title="Initial number\nof sample"))
-p2 <- ggplot(myoutput[myoutput$target_cpt==2,], aes(final_n,diff_real, pch=factor(n2_init))) + 
-  geom_hline(aes(yintercept=0), col=adjustcolor("black", alpha.f = .4)) + 
-  geom_point(alpha = .3) +
-  facet_wrap(~method_f) + theme_bw() +
-  labs(title="b. Second changepoint",x="", y="Distance to real changepoint") +
-  theme(legend.position = c(0.93, 0.6),
-        legend.background = element_rect(fill = "#ffffffaa", colour = NA),
-        legend.title=element_text(size=7), 
-        legend.text=element_text(size=8)) +
-  guides(pch=guide_legend(title="Initial number\nof sample"))
-p3 <- ggplot(myoutput[myoutput$target_cpt==3,], aes(final_n,diff_real, pch=factor(n2_init))) + 
-  geom_hline(aes(yintercept=0), col=adjustcolor("black", alpha.f = .4)) + 
-  geom_point(alpha = .3) +
-  facet_wrap(~method_f) + theme_bw() +
-  labs(title="c. Third changepoint",x="", y="Distance to real changepoint") +
-  theme(legend.position = c(0.93, 0.6),
-        legend.background = element_rect(fill = "#ffffffaa", colour = NA),
-        legend.title=element_text(size=7), 
-        legend.text=element_text(size=8)) +
-  guides(pch=guide_legend(title="Initial number\nof sample"))
-grid.arrange(p1,p2,p3,nrow=3)
+
+p1
+
+
 ```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap='Iterative sampling and impact on ordination.  \\label{fig:case_study_iterative_sampling}'}
+
+getpath4data <- function() {
+  if(Sys.getenv("USER")=="Rosalie") return("/Volumes/-/Script R/Data-off-GitHub/temporal-sampling/")
+  if(Sys.getenv("USER")=="eastonwhite") return("~/Desktop/Research/soil-temporal-sampling/")
+  if(Sys.getenv("USER")!="Rosalie"|Sys.getenv("USER")!="put here your USER") stop("You need to get the data and define their location.")
+}
+# Read data
+vr <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt"))
+
+vrsub <- sample_iterative(vr, n=5, n2=5, input_vector = F, xcol = 1, DCA_axis = 1, messages = F)
+  
+sample_iterative()
+
+```
+
 
 __Main point__: Changepoint was detected even though we used a transformed vector (from community to first component of DCA) 
 
@@ -326,6 +336,11 @@ Outline:
 - example with the case study
 - how this fits in with other work
 - limitations and future work
+
+
+Other dataset that could use our method, e.g., paleo science in general? see review by Wingard et al 2017 https://www.frontiersin.org/articles/10.3389/fevo.2017.00011/full#B140
+
+
 
 Case study: With the iterative method, we found the main changepoint with maximum 9 samples analyzed, with a starting point of 5 randomly distributed samples. Same results for the major change, with only 12% of the samples analyzed. However, need more samples to detect further changes. __Note that it would be possible to edit the function to go ahead and detect next changes once the main one has been detected. Is it worth coding? Shouldn't be too hard to do__
 
