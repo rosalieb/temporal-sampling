@@ -110,9 +110,9 @@ Methods to detect change overtime: see summary https://lindeloev.github.io/mcp/a
 
 Accounting for these considerations in the design of a monitoring program is necessary to detect long-term ecological change. The specifics of the monitoring program will determine the power with which a question of interest can be addressed. For example, @White2019 found that 72\% of vertebrate populations required at least 10 years of monitoring to detect significant changes in the population size over time. Other work has focused on the frequency of monitoring (citations), the allocation of resources spatially versus temporally (citations), and the ability to use citizen science to increase monitoring (citations). Lastly, both the ecological and economical costs of failing to detect a true trend (type II error) have to be weighed against the risks of false (type I error) detection (citation).
 
-Because of new technological advances, there are many data sources that can be derived long after the actual  processes occurred. For example, paleoecological lake cores can be extracted and historical ecological communities can be reconstructured (citations from Rosalie). Similarly, environmental samples (e.g. water, soil) can be saved with eDNA processed later (citation). Similarly, video-graphical approaches can record snapshots of a system and be analyzed later (citations). In each of these cases, decisions have to made about how much data to extract from the previously collected samples. Should the paleoecological core be analyzed at every centimeter? Should the video be assessed at every minute? As long as processing samples is expensive, these trade-offs will remain.
+Because of new technological advances, there are many data sources that can be derived long after the actual  processes occurred. For example, paleoecological lake cores can be extracted and historical ecological communities can be reconstructured (citations from Rosalie). Similarly, environmental samples (e.g. water, soil) can be saved and processed later for composition, including eDNA (citation). Similarly, video-graphical approaches can record snapshots of a system and be analyzed later (citations). In each of these cases, decisions have to made about how much data to extract from the previously collected samples. Should the paleoecological core be analyzed at every centimeter? Should the video be assessed at every minute? As long as processing samples is expensive, these trade-offs will remain.
 
-Here, we develop a set of tools to determine the appropriate number of samples and sampling approach when dealing with data sources where additional samples can be added. We focus on paleoecological core samples as one example of this type of data. We examine the situation where the goal is to detect the time at which a significant change in an ecological community occurs, a changepoint. However, our approaches are widely applicable to other questions and data types. We first investigate these tools using a simulated-based approach to As a case study, we apply these tools to the detection of change points for a set of lakes. (more from Rosalie here).
+Here, we develop a set of tools to determine the appropriate number of samples and sampling approach when dealing with data sources where additional samples can be added. We focus on paleoecological core samples as one example of this type of data. We examine the situation where the goal is to detect the time at which a significant change in an ecological community occurs, a changepoint. However, our approaches are widely applicable to other questions and data types. We first investigate these tools using a simulated-based approach. As a case study, we apply these tools to the detection of change points for a set of lakes. (more from Rosalie here).
 
 # Sampling approaches and changepoint detection
 
@@ -130,7 +130,7 @@ Rosalie: Can you write a paragraph here detailing the changepoint detection proc
 
 
 
-# Simulation approach
+# Theoretical approach
 
 <!--
 - explain the modeling approach
@@ -147,7 +147,7 @@ Theoretical plots
 
 -->
 
-## Theoretical model
+## Simulation model
 
 We began with a theoretical exploration of the sampling requirements to detect a changepoint. We modeled a simple first order autoregressive (AR-1) process (the discrete-time version of the Ornstein–Uhlenbeck process) with a response variable that represents either population size, biodiversity, or some metric of community composition. The model includes temporal autocorrelation ($\phi$), the mean of the process ($\mu_X$), and a white noise term ($w_t$). The white noise term is a normal distribution with mean ($\mu_w$) and variance ($\sigma$).
 
@@ -189,7 +189,7 @@ points(phi20,ylab='Probability correct',xlab='phi',pch=15,cex.lab=1.3,las=1,ylim
 ```
 
 
-```{r theoretical_results_min_time,message=F,warning=F,echo=F,eval=F}
+```{r simulation_min_time,message=F,warning=F,echo=F,eval=F}
 
 source('R/sampling_regular.R')
 source('R/sampling_random.R')
@@ -241,7 +241,7 @@ write.csv(x = shift_size_output,file = 'Output/theoretical_results_shift_size.cs
 ```
 
 
-```{r theoretical_results_min_time_plot, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. The default parameters are $\\sigma = 3$, $\\phi = 0.5$, and a shift size $=0.75$. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. \\label{fig:theoretical_min_time}',message=F,warning=F,echo=F,eval=T}
+```{r simulation_min_time_plot, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. The default parameters are $\\sigma = 3$, $\\phi = 0.5$, and a shift size $=0.75$. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. \\label{fig:simulation_min_time}',message=F,warning=F,echo=F,eval=T}
 
 par(mfrow=c(1,3))
 
@@ -270,10 +270,11 @@ plot(shift_size$shift_size_vec,shift_size$min_time,ylab=' ',xlab='shift size',pc
 In line with theory about monitoring, we found that the probability of correcting identifying a changepoint decreased with smaller levels of population variability ($\sigma$) and autocorrelation ($\phi$). We also found that the probability of correct changepoint detection increases with larger shift sizes, which is essentially the effect size. Thus, the number of sample required to obtain high statistical power (above 0.8) increased with larger population variability, lower autocorrelation, and smaller shift sizes (Fig. \ref{fig:theoretical_min_time}).
 
 
-```{r theoretical_results_sampling_approaches,message=F,warning=F,echo=F,eval=F}
+```{r simulation_results_sampling_approaches,message=F,warning=F,echo=F,eval=F}
 
 source('R/sampling_regular.R')
 source('R/sampling_random.R')
+source('R/sampling_iterative.R')
 source('R/build_time_series.R')
 source('R/updated_param_sensitivity.R')
 source('R/calc_min_time2.R')
@@ -281,9 +282,9 @@ require(tidyverse)
 
 # Need to run each method on a set of simulated time series. We would then have 100 runs for each method and each sampling amount
 
-approach <- c('random')#,'regular','iterative')
-number_samples <- 5:30
-simulation_number <- 1:50
+approach <- c('Random','Regular','Iterative')
+number_samples <- c(seq(5,20,2),25,30,35)
+simulation_number <- 1:20
 output_theory_approach <- data.frame(expand.grid(approach,number_samples,simulation_number))
 names(output_theory_approach) <- c('approach', 'number_samples', 'simulation_number')
 output_theory_approach$distance_to_real = 0
@@ -301,7 +302,7 @@ time_series <- params %>%
 for (i in 1:nrow(output_theory_approach)){
   
   output_theory_approach$distance_to_real[i] <- abs(params$shift_time[output_theory_approach$simulation_number[i]] - calc_distance_to_real(output_theory_approach$approach[i],output_theory_approach$number_samples[i],time_series[[output_theory_approach$simulation_number[i]]]))
-  #print(i)
+  print(i)
 }
 
 
@@ -309,7 +310,33 @@ write.csv(x = output_theory_approach,file = 'Output/theoretical_comparing_approa
 ```
 
 
+```{r simulation_approaches_graph, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Distance to real changepoint per total number of samples analyzed for simulations, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Each sample size and approach combination was simulated 50 times with the same parameters as Figure \\ref{fig:simulation_min_time}.\\label{fig:simulation_number_sample}'}
 
+myoutput <- read.csv(file='Output/theoretical_comparing_approaches.csv',header=T)
+myoutput$approach <- factor(myoutput$approach,levels = c('Random', 'Regular', 'Iterative'))
+require(dplyr)
+myoutput_summary <- myoutput %>%
+  group_by(approach,number_samples) %>%
+  summarize(mean_distance = mean(distance_to_real),sd_distance=sd(distance_to_real))
+  
+library(ggplot2)
+#devtools::install_github("rensa/stickylabeller")
+library(stickylabeller)
+p1  <- ggplot(myoutput_summary, aes(x=number_samples,y=mean_distance)) + geom_line()  + geom_ribbon(aes(ymin = mean_distance - 1.96*sd_distance, ymax = mean_distance + 1.96*sd_distance), fill = "grey80") +geom_line(size=1) + coord_cartesian(ylim = c(2.2, 50))  + 
+  facet_wrap(~approach,
+             labeller = label_glue('({.l}) {approach} sampling ')) + 
+  theme_bw() +
+  labs(x="Total number of samples analyzed", y="Distance to real changepoint") #+
+ # theme(legend.position = c(0.93, 0.72),
+#       legend.background = element_rect(fill = "#ffffffaa", colour = NA),
+#        legend.title=element_text(size=7), 
+ #       legend.text=element_text(size=8)) +
+#  guides(pch=guide_legend(title="Initial number\nof sample"))
+
+p1
+
+
+```
 
 
 
@@ -344,7 +371,7 @@ myoutput$method <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterat
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Distance to real changepoint per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.  \\label{fig:case_study_number_sample}'}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='WHY ARE THERE NEGATIVE VALUES HERE? Distance to real changepoint per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.  \\label{fig:case_study_number_sample}'}
 library(ggplot2)
 #devtools::install_github("rensa/stickylabeller")
 library(stickylabeller)
@@ -511,13 +538,14 @@ Outline:
 
 Other dataset that could use our method, e.g., paleo science in general? see review by Wingard et al 2017 https://www.frontiersin.org/articles/10.3389/fevo.2017.00011/full#B140
 
-
-
 Case study: With the iterative method, we found the main changepoint with maximum 9 samples analyzed, with a starting point of 5 randomly distributed samples. Same results for the major change, with only 12% of the samples analyzed. However, need more samples to detect further changes. __Note that it would be possible to edit the function to go ahead and detect next changes once the main one has been detected. Is it worth coding? Shouldn't be too hard to do__
 
-\clearpage
 
-Limitations:
+Our approach goes beyond just paleoecological analyses. Running simulations or using past data to understand the amount of sampling effort required is important in many systems where sample collection or processing is expensive (citations). The specific sampling techniques can also be compared to determine the optimal strategy in terms of accuracy and cost. Our specific approach in this paper was on data where more samples can be added long after the dynamics occurred. Our interval sampling approach involved taking a fixed number of regularly-spaced samples to start and then adding more samples strategically to detect a changepoint. Suppose instead that the goal was to detect a change in observed individuals with video-based approaches. It is often not practical to watch entire videos, so it can be useful to choose strategic time-points that would address our question of interest. Using an interval sampling approach, one could take a fixed number of samples to start. The trend over time from simple linear regression could be taken. Then, samples can be taken at random locations one-by-one and to see which samples have the largest effect on the trend estimates. If a particular sample has a large effect on the trend, then it would be best to choose another nearby sample. Sampling would continue until the trend estimate began to settle down. Thus, the iterative sampling approach is particularly relevant to data sources where additional samples can be taken long after the initial dynamics. These approaches are also applicable to other questions related to the optimal sample size and approach in determining long-term trends, biodiversity estimates, and more (citations). 
+
+<!--Limitations paragraph-->
+
+Although our approach is flexible to be applied to various data sources and questions, this is also one of its limitations. The specific number of samples and optimal sampling approach will largely be system specific. A similar system may be used to get some sense for the best sampling scheme, but it will depend on the VARIOUS FACTORS HERE. Similarly, selecting a set number of samples or specific approach may also limit what future questions can be asked. However, more samples could be added to address these additional questions.
 
 - It is not limited to paleo data
 - Depends on the question being asked
@@ -531,5 +559,6 @@ Concluding paragraph:
 About recommendation to reduce the frequency of data collected as part of monitoring program:  
 While long-term monitoring program are often expensive, these cost are nothing compared to the value of the resources monitored and the policies affecting these resources (@lovett_who_2007). Monitoring programs should try to anticipate the potential questions of tomorrow, and reducing the data collected must be done with the best foresight possible on how these data may indeed not be necessary to manage ecosystems in the future.  
 
+\clearpage
 
 # References
