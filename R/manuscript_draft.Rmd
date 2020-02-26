@@ -75,7 +75,17 @@ Keywords: {time series}
 
 
 ```{r load_packages,echo=F,warning=F,message=F}
-if (!require("pacman")){install.packages("pacman");library(pacman)}
+pkgTest <- function(x)
+{
+  if (!require(x,character.only = TRUE))
+  {
+    install.packages(x,dep=TRUE)
+    if(!require(x,character.only = TRUE)) stop("Package not found")
+  }
+  library(x, character.only = TRUE)
+}
+
+pkgTest("pacman")
 
 pacman::p_load(patchwork,stickylabeller)
 ```
