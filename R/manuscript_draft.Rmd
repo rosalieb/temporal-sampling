@@ -7,7 +7,7 @@ fontsize: 12pt
 geometry: margin=1in
 header-includes: \usepackage{float} \usepackage{lineno} \usepackage{setspace}\doublespacing
   \usepackage[round]{natbib} \bibpunct[; ]{(}{)}{,}{a}{}{,} \usepackage{color} \usepackage{totcount}
-  \newtotcounter{citenum} \def\oldcite{} \let\oldcite=\bibcite \def\bibcite{\stepcounter{citenum}\oldcite} \newcommand\easton[1]{\textcolor{red}{#1}} \newcommand\rosalie[1]{\textcolor{darkseagreen4}{#1}}
+  \newtotcounter{citenum} \def\oldcite{} \let\oldcite=\bibcite \def\bibcite{\stepcounter{citenum}\oldcite} \newcommand\easton[1]{\textcolor{red}{#1}} \newcommand\rosalie[1]{\textcolor{blue}{#1}}
 output:
   pdf_document:
     fig_caption: yes
@@ -81,8 +81,11 @@ if (!require("pacman",character.only = TRUE))
     if(!require("pacman",character.only = TRUE)) stop("Package not found")
   }
 library("pacman")
+
+# Keeping below source for github package. Ask Easton whether pacman works for github packages or not.
+#devtools::install_github("rensa/stickylabeller")
   
-pacman::p_load(patchwork,stickylabeller)
+pacman::p_load(patchwork, stickylabeller, ggplot2, dplyr, wesanderson, reshape)
 ```
 
 
@@ -319,14 +322,10 @@ write.csv(x = output_theory_approach,file = 'Output/theoretical_comparing_approa
 
 myoutput <- read.csv(file='Output/theoretical_comparing_approaches.csv',header=T)
 myoutput$approach <- factor(myoutput$approach,levels = c('Random', 'Regular', 'Iterative'))
-require(dplyr)
 myoutput_summary <- myoutput %>%
   group_by(approach,number_samples) %>%
   summarize(mean_distance = mean(distance_to_real),sd_distance=sd(distance_to_real))
   
-library(ggplot2)
-#devtools::install_github("rensa/stickylabeller")
-library(stickylabeller)
 p1  <- ggplot(myoutput_summary, aes(x=number_samples,y=mean_distance)) + geom_line()  + geom_ribbon(aes(ymin = mean_distance - 1.96*sd_distance, ymax = mean_distance + 1.96*sd_distance), fill = "grey80") +geom_line(size=1) + coord_cartesian(ylim = c(2.2, 50))  + 
   facet_wrap(~approach,
              labeller = label_glue('({.l}) {approach} sampling ')) + 
@@ -377,9 +376,6 @@ myoutput$method <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterat
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='WHY ARE THERE NEGATIVE VALUES HERE? Distance to real changepoint per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.  \\label{fig:case_study_number_sample}'}
-library(ggplot2)
-#devtools::install_github("rensa/stickylabeller")
-library(stickylabeller)
 p1 <- ggplot(myoutput[myoutput$target_cpt==1,], aes(final_n,diff_real, pch=factor(n2_init))) + 
   geom_hline(aes(yintercept=0), col=adjustcolor("black", alpha.f = .4)) + 
   geom_point(alpha = .3) +
@@ -426,7 +422,6 @@ vr_out_order$count <- abs(vr_out_order$count-max(vr_out_order$count)-1)
 
 
 
-library(wesanderson)
 mypal <- wes_palette("GrandBudapest2", max(vr_out_order$count),type = "continuous")
  
 # Plot with all data
@@ -502,7 +497,6 @@ fakedata[vr_out_order$index[vr_out_order$count==4],] <- 4
 fakedata[vr_out_order$index[vr_out_order$count==5],] <- 5 
 fakedata[,1] <- 6
 fakedata <- rbind(rep(7,ncol(fakedata)),fakedata)
-library(reshape)
 fakedata <- cbind(Year=rep(75:1,ncol(fakedata)), melt(fakedata))
 head(fakedata)
 
@@ -516,7 +510,6 @@ panel.grid.minor = element_blank(), axis.line = element_blank(), panel.backgroun
   labs(subtitle="a. Continuous community dataset")
 
 # Assemble plot
-library(patchwork)
 
  p3 | (p_init / p1 / p2)
 
