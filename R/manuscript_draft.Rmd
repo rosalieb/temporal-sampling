@@ -7,7 +7,7 @@ fontsize: 12pt
 geometry: margin=1in
 header-includes: \usepackage{float} \usepackage{lineno} \usepackage{setspace}\doublespacing
   \usepackage[round]{natbib} \bibpunct[; ]{(}{)}{,}{a}{}{,} \usepackage{color} \usepackage{totcount}
-  \newtotcounter{citenum} \def\oldcite{} \let\oldcite=\bibcite \def\bibcite{\stepcounter{citenum}\oldcite} \newcommand\easton[1]{\textcolor{red}{#1}} \newcommand\rosalie[1]{\textcolor{blue}{#1}}
+  \newtotcounter{citenum} \def\oldcite{} \let\oldcite=\bibcite \def\bibcite{\stepcounter{citenum}\oldcite} \newcommand\easton[1]{\textcolor{red}{#1}} \newcommand\rosalie[1]{\textcolor{darkseagreen4}{#1}}
 output:
   pdf_document:
     fig_caption: yes
@@ -75,18 +75,13 @@ Keywords: {time series}
 
 
 ```{r load_packages,echo=F,warning=F,message=F}
-pkgTest <- function(x)
-{
-  if (!require(x,character.only = TRUE))
+if (!require("pacman",character.only = TRUE))
   {
-    install.packages(x,dep=TRUE)
-    if(!require(x,character.only = TRUE)) stop("Package not found")
+    install.packages("pacman",dep=TRUE)
+    if(!require("pacman",character.only = TRUE)) stop("Package not found")
   }
-  library(x, character.only = TRUE)
-}
-
-pkgTest("pacman")
-
+library("pacman")
+  
 pacman::p_load(patchwork,stickylabeller)
 ```
 
@@ -360,7 +355,7 @@ p1
 
 \easton{In line with the simulation results, we tested different sampling methods} on a real community time-series, from Lake Varese (IT). Lake Varese is a small (14.8 km^2^), deep (z$_{max}$= 26m), monomictic lake, in the subalpine region of north-western Italy (238 m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed (ref). Nutrient status was responsible for restructuration of the lake communities across trophic levels (e.g., Crosta 1999, @bruel_seeking_2018). Air temperature is now driving changes in plankton communities (@bruel_seeking_2018).
 
-Previously, Cladoceran assemblage was reconstructed at a 2-3 years resolution, from a 74-cm sediment core (VAR10-10) covering the 1816(±26)—2010 period [@bruel_seeking_2018]. We detected changepoints on the first component computed from the assemblage data. We used the same ordination method as in Bruel et al (2018), but note that Detrended Correspondence Analysis (DCA) is best used to conserve multiple gradients (\easton{Rosalie: can you explain this a bit more, I'm not sure what it means}). As a result, several changepoints were detected on the first component (in 1926/1928, 1946/1948 and 1983/1988). We defined these as the "true" changepoints given they came from an analysis of the complete data. The 1983-1988 changepoint was the largest in magnitude. (\easton{Rosalie: does this mean that the changepoint occurred sometime between 1983 and 1988}). <!--We conducted the analysis on the second component as well, where only one changepoint was detected (in 1944/1946).-->
+Previously, Cladoceran assemblage was reconstructed at a 2-3 years resolution, from a 74-cm sediment core (VAR10-10) covering the 1816(±26)—2010 period [@bruel_seeking_2018]. We detected changepoints on the first component computed from the assemblage data. We used the same ordination method as in Bruel et al (2018), but note that Detrended Correspondence Analysis (DCA) is best used to conserve multiple gradients (\easton{Rosalie: can you explain this a bit more, I'm not sure what it means}). As a result, several changepoints were detected on the first component (in 1926/1928, 1946/1948 and 1983/1988). We defined these as the "true" changepoints given they came from an analysis of the complete data. The 1983-1988 changepoint was the largest in magnitude. (\easton{Rosalie: does this mean that the changepoint occurred sometime between 1983 and 1988} \rosalie{The changepoint was detected in 1988, but in fact, it could have taken place anytime between 1983 and 1988. That is just a way to see it, but let me know if it is confusing. I reviewed a paper and asked the authors to change the changepoint to this bracket, and they replied telling me they didn't understand my comment, so maybe it is not worth the confusion! Put another way, if we were recording the temperature every hour, and it was 6°C at 1, 2, 3, 4 am, then 8°C at 5, 6, 7, 8am, the method would detect the changepoint at 5am. But in fact, the temperature could have very well changed anytime between 4.01am and 5am. So I would say: "temperature changed between 4 and 5 am.". Am I maling any sense?}). <!--We conducted the analysis on the second component as well, where only one changepoint was detected (in 1944/1946).-->
 
 We used the full record (74 observations) and subsampled following the three strategies described earlier (random, regular, iterative), varrying the maximum number analyzed from 5 to 15. Iterative sampling final number could be lower than maximum number if both samples framing the shift were analyzed.
 
