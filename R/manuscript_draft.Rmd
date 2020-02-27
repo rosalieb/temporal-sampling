@@ -20,6 +20,8 @@ knitr::opts_knit$set(root.dir = dirname(getwd()))
 ```
 
 Title: Sampling requirements to detect ecosystem shifts
+(lame title) Getting closer to the point: sampling requirements to detect ecosystem shifts.
+Recommendation for temporal sampling
 	
 \vspace{7 mm}
 	
@@ -67,7 +69,7 @@ Preprint available at:
 
 (150-250 words)
 
-Environmental monitoring is a key piece of managing ecosystems. Given that most monitoring efforts are still expensive and time-consuming, it is essential that monitoring programs are designed to be efficient and effective. In many situations, the expensive part of monitoring is not sample collection, but instead sample processing, which leads to only a subset of the samples being processed. For example, soil or ice cores are taken in the field and later processed in a laboratory setting. Standard approaches either involve either equally-spaced or random sampling throughout each core. We use simulations to show how many samples and which types of sampling approaches are the most effective in detecting ecosystem change. We test these ideas with a case study of paleoecological plankton data extracted from lake sediment cores. We demonstrate that standard approaches to sample processing are inefficient and costly. We also show that, compared with these standard approaches, fewer samples are typically needed to achieve high statistical power. We explain how our approach can be applied to monitoring programs that rely on video records, eDNA, remote sensing, and other common tools. 
+Environmental monitoring is a key piece of managing ecosystems. Given that most monitoring efforts are still expensive and time-consuming, it is essential that monitoring programs are designed to be efficient and effective. In many situations, the expensive part of monitoring is not sample collection, but instead sample processing, which leads to only a subset of the samples being processed. For example, sediment or ice cores can be taken in the field in less than an hour, but will be processed in a laboratory setting for anytime between a week and several months, depending on how much information is extracted. Sub-sampling allows to reduce the processing time while still giving precious insight. Standard sub-sampling approaches often involve equally-spaced sampling. We use simulations to show how many samples and which types of sampling approaches are the most effective in detecting ecosystem change. We test these ideas with a case study of Cladocera community assemblage, which trajectory was reconstructed from a sediment core. We demonstrate that standard approaches to sample processing are inefficient, hence costly. We also show that, compared with these standard approaches, fewer samples are typically needed to achieve high statistical power. We explain how our approach can be applied to monitoring programs that rely on video records, eDNA, remote sensing, and other common tools that allow re-sampling. 
 
 \vspace{3 mm}
 
@@ -80,7 +82,6 @@ if (!require("pacman",character.only = TRUE))
     install.packages("pacman",dep=TRUE)
     if(!require("pacman",character.only = TRUE)) stop("Package not found")
   }
-library("pacman")
 
 # Keeping below source for github package. Ask Easton whether pacman works for github packages or not.
 #devtools::install_github("rensa/stickylabeller")
@@ -108,16 +109,20 @@ pacman::p_load(patchwork, stickylabeller, ggplot2, dplyr, wesanderson, reshape)
 
 # Introduction 
 
-Environmental monitoring is one of the core components to modern research and management (citations). Within an adaptive management framework, monitoring is needed for both learning about the system under study and assessing the effectiveness of management interventions (Lovett et al, 2007). Increasingly, long-term monitoring programs, like the Long Term Ecological Research (LTER) Network in the USA, are becoming available (Magurran2010). However, environmental monitoring is still often expensive and time-consuming (citations). Therefore, monitoring programs need to be designed in such a way to address the question of interest. Key considerations of an optimal monitoring program include the frequency of surveys, the selection of sites, as well as the precision and accuracy of the monitoring itself (citation). Monitoring programs also need to be designed to be cost-effective given limited budgets (citations). 
+Environmental monitoring is one of the core components to modern research and management (citations). Within an adaptive management framework, monitoring is needed for both learning about the system under study and assessing the effectiveness of management interventions (Lovett et al, 2007). Increasingly, long-term monitoring programs, like the Long Term Ecological Research (LTER) Network in the USA, are becoming available (Magurran2010). However, environmental monitoring is still often expensive and time-consuming, especially when further analyses are needed following sample collection (citations). In Ecology and Genetics especially, there has always been a disparity between the amount of data that can be aquired and stored, and the processing methods that could allow to extract the most information from that data. \rosalie{I feel like it could be a sensitive subject (we don't want to attack our peers and the way they do science), but there is definitely some truths. With some restoration work going on at the lab, there were some emails exchange about throwing away samples that were collected in 2015 and never looked at. If we could find the correct way to talk about this issue (without being judgemental, I'm sure it'd be interesting to many!).}
+
+Therefore, monitoring programs need to be designed in such a way to address the question of interest, without wasting resources. Key considerations of an optimal monitoring program include the frequency of surveys, the selection of sites, as well as the precision and accuracy of the monitoring itself (citation). Monitoring programs also need to be designed to be cost-effective given limited budgets (citations). 
 
 
+<!-- 
 Methods to detect change overtime: see summary https://lindeloev.github.io/mcp/articles/packages.html
 
 - Historical data and ability to choose how much to sample
+--> 
 
 Accounting for these considerations in the design of a monitoring program is necessary to detect long-term ecological change. The specifics of the monitoring program will determine the power with which a question of interest can be addressed. For example, @White2019 found that 72\% of vertebrate populations required at least 10 years of monitoring to detect significant changes in the population size over time. Other work has focused on the frequency of monitoring (citations), the allocation of resources spatially versus temporally (citations), and the ability to use citizen science to increase monitoring (citations). Lastly, both the ecological and economical costs of failing to detect a true trend (type II error) have to be weighed against the risks of false (type I error) detection (citation).
 
-Because of new technological advances, there are many data sources that can be derived long after the actual  processes occurred. For example, paleoecological lake cores can be extracted and historical ecological communities can be reconstructured (citations from Rosalie). Similarly, environmental samples (e.g. water, soil) can be saved and processed later for composition, including eDNA (citation). Likewise, video-graphical approaches can record snapshots of a system and be analyzed later (citations). In each of these cases, decisions have to made about how much data to extract from the previously collected samples. Should the paleoecological core be analyzed at every centimeter? Should the video be assessed at every minute? As long as processing samples is expensive, these trade-offs will remain.
+Because of new technological advances, there are many data sources that can be derived long after the actual  processes occurred. For example, the field of paleolimnology paleoecological lake cores can be extracted and historical ecological communities can be reconstructured (citations from Rosalie). Similarly, environmental samples (e.g. water, soil) can be saved and processed later for composition, including eDNA (citation). Likewise, video-graphical approaches can record snapshots of a system and be analyzed later (citations). In each of these cases, decisions have to made about how much data to extract from the previously collected samples. Should the paleoecological core be analyzed at every centimeter? Should the video be assessed at every minute? As long as processing samples is expensive, these trade-offs will remain.
 
 Here, we develop a set of tools to determine the appropriate number of samples and sampling approach when dealing with data sources where additional samples can be added. We tailor our analysis to the detection of changepoint. Changepoint are an important characteristic of a time serie We focus on paleoecological core samples as one example of this type of data. We examine the situation where the goal is to detect the time at which a significant change in an ecological community occurs, a changepoint. However, our approaches are widely applicable to other questions and data types. We first investigate these tools using a simulated-based approach. We then test the tools on a case study from a paleosequence. 
 # Sampling approaches and changepoint detection
@@ -128,7 +133,7 @@ For both our simulations and case study, we investigate the effect of different 
 source(paste0(getwd(),"/R/Fig_conceptual.R"))
 ```
 
-The random sampling approach involves taking a set number of random points throughout the time series (Fig. \ref{fig:conceptual}c). In the context of sediment cores, this would mean analyzing community composition as random spots along the core. We hypothesize that random sampling will perform the worst at getting as close as possible to a "real" changepoint. Regular sampling is commonly used (citations) and requires that a set number of samples be taken at regular intervals (Fig. \ref{fig:conceptual}d). Lastly, iterative sampling involves first taking a set number of samples and then alliteratively adding samples until a pre-determined level of precision is achieved (Fig. \ref{fig:conceptual}e-g). 
+The random sampling approach involves taking a set number of random points throughout the time series (Fig. \ref{fig:conceptual}c). In the context of sediment cores, this would mean analyzing community composition as random location along the core. Random sampling is recommanded in designs aiming at quantifying the average size of a population (spatial approach) (Nad’o and Kaňuch, 2018). We hypothesize that random sampling will perform the worst at getting as close as possible to a "real" changepoint. Regular sampling is commonly used (citations) and requires that a set number of samples be taken at regular intervals (Fig. \ref{fig:conceptual}d). Lastly, iterative sampling involves first taking a set number of samples and then alliteratively adding samples until a pre-determined level of precision is achieved (Fig. \ref{fig:conceptual}e-g). 
 
 Rosalie: Can you write a paragraph here detailing the changepoint detection process?
 
