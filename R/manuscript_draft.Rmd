@@ -155,12 +155,12 @@ Theoretical plots
 
 ## Simulation model
 
-We began with a theoretical exploration of the sampling requirements to detect a changepoint. We modeled a simple first order autoregressive (AR-1) process (the discrete-time version of the Ornstein–Uhlenbeck process) with a response variable that represents either population size, biodiversity, or some metric of community composition. The model includes temporal autocorrelation ($\phi$), the mean of the process ($\mu_X$), and a white noise term ($w_t$). The white noise term is a normal distribution with mean ($\mu_w$) and variance ($\sigma$).
+We began with a theoretical exploration of the sampling requirements to detect a changepoint. We modeled a simple first order autoregressive (AR-1) process (the discrete-time version of the Ornstein–Uhlenbeck process) with a response variable ($X_t$) that represents either population size, biodiversity, or some metric of community composition at time $t$. The model includes temporal autocorrelation ($\phi$), the mean of the process ($\mu_X$), and a white noise term ($w_t$). The white noise term is a normal distribution with mean ($\mu_w$) and variance ($\sigma^2$):
 
 $$
 \begin{array}{rcl} 
 X_t & = & \mu_X + \phi (X_{t-1} - \mu_X) + w_t \\ 
-w_t & \sim & Norm(\mu_w,\sigma)
+w_t & \sim & Norm(\mu_w,\sigma^2).
 \end{array}
 $$
 We included a changepoint by shifting $\mu_X$ at time $\tau$ given a specific shift size ($\delta$).
@@ -168,7 +168,7 @@ We included a changepoint by shifting $\mu_X$ at time $\tau$ given a specific sh
 We explored how each of these model parameters affected our ability to detect a change point. We simulate an entire time series (the "true" data for comparison), but we also examine the effect of not sampling every interval. We specifically study how the amount of samples included and the type of sampling affects the detection probability. For simulations, statistical power is the fraction of simulations that were able to detect a changepoint. We define a detection as an estimate within five time points (over 100 time points) of the true changepoint. We define $T_{min}$ as the minimum number of samples required to achieve 0.8 statistical power.
 
 
-```{r theoretical_results,message=F,warning=F,echo=F,eval=F}
+```{r theoretical_results_old,message=F,warning=F,echo=F,eval=F}
 
 source('R/sampling_regular.R')
 source('R/sampling_random.R')
@@ -247,7 +247,7 @@ write.csv(x = shift_size_output,file = 'Output/theoretical_results_shift_size.cs
 ```
 
 
-```{r simulation_min_time_plot, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. The default parameters are $\\sigma = 3$, $\\phi = 0.5$, and a shift size $=0.75$. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. \\label{fig:simulation_min_time}',message=F,warning=F,echo=F,eval=T}
+```{r simulation_min_time_plot, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. Random sampling was used with the default parameters are $\\sigma = 3$, $\\phi = 0.5$, and a shift size $=0.75$. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. \\label{fig:simulation_min_time}',message=F,warning=F,echo=F,eval=T}
 
 par(mfrow=c(1,3))
 
