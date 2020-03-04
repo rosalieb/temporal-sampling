@@ -19,9 +19,7 @@ output:
 knitr::opts_knit$set(root.dir = dirname(getwd()))
 ```
 
-Title: Sampling requirements and approaches to detect ecosystem shifts
-(lame title) Getting closer to the point: sampling requirements to detect ecosystem shifts.
-Recommendation for temporal sampling
+Title: Sampling requirements and approaches to detect ecosystem shifts  
 	
 \vspace{7 mm}
 	
@@ -122,9 +120,9 @@ Methods to detect change overtime: see summary https://lindeloev.github.io/mcp/a
 
 Accounting for these considerations in the design of a monitoring program is necessary to detect long-term ecological change. The specifics of the monitoring program will determine the power with which a question of interest can be addressed. For example, @White2019d found that 72\% of vertebrate populations required at least 10 years of monitoring to detect significant changes in the population size over time. The specific number of years required depended on the species biology and the detection method used [@White2019d]. Other work has focused on the frequency of monitoring [@Wauchope2019a], the allocation of resources spatially versus temporally [@Rhodes2011a,@Weiser2019a], and the ability to use citizen science to increase monitoring [@Weiser2020a]. Lastly, both the ecological and economical costs of failing to detect a true trend (type II error) have to be weighed against the risks of false (type I error) detection [@Mapstone1995a].
 
-Because of new technological advances, there are many data sources that can be derived long after the actual  processes occurred. For example, the field of paleolimnology paleoecological lake cores can be extracted and historical ecological communities can be reconstructured (citations from Rosalie). Similarly, environmental samples (e.g. water, soil) can be saved and processed later for composition, including eDNA [@Bohmann2014a]. Likewise, photo- or video-based monitoring can record snapshots of a system and be analyzed later (citations). In each of these cases, decisions have to made about how much data to extract from the previously collected samples. Should the paleoecological core be analyzed at every centimeter? Should the video be assessed once per minute? As long as processing samples is expensive, these trade-offs will remain.
+Because of new technological advances, there are many data sources that can be derived long after the actual  processes occurred. For example, sediment cores can be retrieved from lakes, allowing reconstruction of past ecological communities or conditions (Cohen, 2003). Similarly, environmental samples (e.g. water, soil) can be saved and processed later for composition, including eDNA [@Bohmann2014a]. Likewise, photo- or video-based monitoring can record snapshots of a system and be analyzed later (citations). In each of these cases, decisions have to made about how much data to extract from the previously collected samples. Should the paleoecological core be analyzed at every centimeter? Should the video be assessed once per minute? As long as processing samples is expensive, these trade-offs will remain.
 
-Here, we develop a set of tools to determine the appropriate number of samples and sampling approach when dealing with data sources where additional samples can be added. We tailor our analysis to the detection of changepoint in a time series. Changepoints are an important characteristic of a time series. We focus on paleoecological core samples as one example of this type of data. We examine the situation where the goal is to detect the time at which a significant change in an ecological community occurs, a changepoint. However, our approaches are widely applicable to other questions and data types. We first investigate these tools using a simulated-based approach. We then test the tools on a case study from a paleosequence. 
+Here, we develop a set of tools to determine the appropriate number of samples and sampling approach when dealing with data sources where additional samples can be added. We tailor our analysis to the detection of changepoint in a time series, were each point had a certain degree of autocorrelation with the previous, until a changepoint come. Changepoints are an important characteristic of a time series. We focus on paleoecological core samples as one example of this type of data. We examine the situation where the goal is to detect the time at which a significant change in an ecological community occurs, a changepoint. However, our approaches are widely applicable to other questions and data types. We first investigate these tools using a simulated-based approach. We then test the tools on a case study from a paleosequence. 
 
 
 # Sampling approaches and changepoint detection
@@ -135,12 +133,19 @@ For both our simulations and case study, we investigate the effect of different 
 source(paste0(getwd(),"/R/Fig_conceptual.R"))
 ```
 
-The random sampling approach involves taking a set number of random points throughout the time series (Fig. \ref{fig:conceptual}c). In the context of sediment cores, this would mean analyzing community composition as random location along the core. Random sampling is recommanded in designs aiming at quantifying the average size of a population (spatial approach) (Nad’o and Kaňuch, 2018). We hypothesize that random sampling will perform the worst at getting as close as possible to a "real" changepoint. Regular sampling is commonly used (citations) and requires that a set number of samples be taken at regular intervals (Fig. \ref{fig:conceptual}d). Lastly, iterative sampling involves first taking a set number of samples and then alliteratively adding samples until a pre-determined level of precision is achieved (Fig. \ref{fig:conceptual}e-g). 
-
-Rosalie: Can you write a paragraph here detailing the changepoint detection process?
+The random sampling approach involves taking a set number of random points throughout the time series (Fig. \ref{fig:conceptual}c). In the context of sediment cores, this would mean analyzing community composition as random location along the core. Random sampling is recommanded in designs aiming at quantifying the average size of a population (spatial approach) (Nad’o and Kaňuch, 2018). We hypothesize that random sampling will perform the worst at getting as close as possible to a "real" changepoint. Regular sampling is commonly used (citations) and requires that a set number of samples be taken at regular intervals (Fig. \ref{fig:conceptual}d). Lastly, iterative sampling involves first taking a set number of samples and then alliteratively adding samples until a pre-determined level of precision is achieved (Fig. \ref{fig:conceptual}e-g). In each scenarios, we sample the first and last sample, in case the changepoint takes place early or late in the period covered by the sampling.
 
 
+We detect changepoints with the function _e.divisive()_ in the R package _ecp_ (James et al 2019). There are several methods available to detect changepoint (reviewed in James and Matteson, 2014); _e.divisive_ is a divisive hierarchical estimation algorithm for multiple change point analysis. We chose this method because it is able to perform multiple change point analysis for both uni- and multi-variate time serie, without a priori knowledge of the number of change points. Herein, we focus on detecting the most important changepoint, although we tested the method on a time-serie that would have multiple changepoints (Supplementary Materials 1).
 
+
+We wrote three functions:  
+  * sample_random(): sample first and last sample, in addition of n-2 random samples in between (n = maximum number of sample, chosen by the user),
+  * sample_regular(): sample first and last sample, in addition of n-2 evenly spaced samples in between (n = maximum number of samples, chosen by the user),
+  * sample_regular(): sample first and last sample as well as 3 evenly spaced samples in between (3 is the default but can be modified), in order to initiate the changepoint detection. Upon detection of the changepoint on this 5 samples time series, a new sample is added between the changepoint and the previous sample, to narrow down the real changepoint. Detection of changepoint / addition of sample is repeated, until it was narrowed down to two consecutive samples, or n (maximum number of samples, chosen by the user) was reached, whichever comes first.
+  
+
+In order to test the performance, we detected the "real" changepoint on the whole time-serie, and compare the changepoint found on the sub-sample with the "real" one. The distance to real changepoint served as performance diagnostic.
 
 
 # Theoretical approach
