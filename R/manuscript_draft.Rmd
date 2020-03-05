@@ -340,6 +340,7 @@ p1  <- ggplot(myoutput_summary, aes(x=number_samples,y=mean_distance)) + geom_li
   facet_wrap(~approach,
              labeller = label_glue('({.l}) {approach} sampling ')) + 
   theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   labs(x="Total number of samples analyzed", y="Distance to real changepoint") #+
  # theme(legend.position = c(0.93, 0.72),
 #       legend.background = element_rect(fill = "#ffffffaa", colour = NA),
@@ -372,32 +373,47 @@ In line with our simulation approach, we subsampled the full record (74 observat
 
 ## Case study results
 
-We found that random sampling performed the worst, as changepoint analysis was left to chance. Regular sampling provided good estimates from 8 samples (0-3 sample of absolute error), but detecting the true changepoint depended on the interval falling close to the true changepoint. Iterative sampling, where 5 samples are initially sampled, then other samples are slowly added, performed the best, as no more than 9 samples were ever necessary to get the true changepoint (Fig. \ref{fig:case_study_number_sample} (c)). We show how iterative sampling changes the ordination, and the resulting changepoint, as more samples are added (Fig. \ref{fig:case_study_iterative_sampling}) <!--Note that when the initial number of samples was set to 7 Fig. \ref{fig:case_study_number_sample} (c), square markers), the distance to the real changepoint was initially very high. Without any prior, the initial number sampled fell far away from the true changepoint.-->
+We found that random sampling performed the worst, as changepoint analysis was left to chance. Regular sampling provided good estimates from 8 samples (0-3 sample of absolute error), but detecting the true changepoint depended on the interval falling close to the true changepoint (i.e., left to chance). Iterative sampling, where 5 samples are initially sampled, then other samples are slowly added, performed the best, as no more than 9 samples were ever necessary to get the true changepoint (Fig. \ref{fig:case_study_number_sample} (c)). We show how iterative sampling changes the ordination, and the resulting changepoint, as more samples are added (Fig. \ref{fig:case_study_iterative_sampling}) <!--Note that when the initial number of samples was set to 7 Fig. \ref{fig:case_study_number_sample} (c), square markers), the distance to the real changepoint was initially very high. Without any prior, the initial number sampled fell far away from the true changepoint.-->
 
 We tested how the three methods performed at detecting other changepoints of lower magnitude (as three changepoints were detected in the initial study, @Bruel2018). Iterative sampling still performed best, especially if an higher number of initial samples was chosen (7 samples out of 74, Supplementary Materials \textcolor{red}{2}).
 <!--This could probably be moved to the discussion: The initial number of samples should be chosen depending on the objective of the study. If investigators want to find the biggest transition only, then a low number might be enough (include here results from theoretical results?). If investigators suspect or want to test for several changepoints, we recommend analyzing initially about 10% of the length of the time series to have a good initial ranking.-->
 
 
-```{r case study read data output, include=FALSE}
-myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese.txt"))
-myoutput$method <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterative'))
-
-```
-
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='WHY ARE THERE NEGATIVE VALUES HERE? Distance to real changepoint per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.  \\label{fig:case_study_number_sample}'}
-p1 <- ggplot(myoutput[myoutput$target_cpt==1,], aes(final_n,diff_real, pch=factor(n2_init))) + 
+# Read data
+myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese.txt"))
+myoutput$method <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterative'))
+myoutput$diff_real <- abs(myoutput$diff_real)
+
+# Change to TRUE if we decide it is worth it to show several initial number of n2. It looks more confusing -- but it would bring more information
+several_n2_init = F
+
+# Plot
+p1 <- if(several_n2_init) {
+  ggplot(myoutput[myoutput$target_cpt==1,], aes(final_n,diff_real, pch=factor(n2_init))) + 
   geom_hline(aes(yintercept=0), col=adjustcolor("black", alpha.f = .4)) + 
   geom_point(alpha = .3) +
   facet_wrap(~method,
              labeller = label_glue('({.l}) {method} sampling ')) + 
   theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   labs(x="Total number of samples analyzed", y="Distance to real changepoint") +
   theme(legend.position = c(0.93, 0.72),
         legend.background = element_rect(fill = "#ffffffaa", colour = NA),
         legend.title=element_text(size=7), 
         legend.text=element_text(size=8)) +
   guides(pch=guide_legend(title="Initial number\nof sample"))
+} else {
+  ggplot(myoutput[myoutput$target_cpt==1 & myoutput$n2_init == 5,], aes(final_n,diff_real)) + 
+  geom_hline(aes(yintercept=0), col=adjustcolor("black", alpha.f = .4)) + 
+  geom_point(alpha = .3) +
+  facet_wrap(~method,
+             labeller = label_glue('({.l}) {method} sampling ')) + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  labs(x="Total number of samples analyzed", y="Distance to real changepoint") 
+}
 
 p1
 
