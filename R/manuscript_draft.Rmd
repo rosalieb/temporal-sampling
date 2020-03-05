@@ -290,9 +290,7 @@ shift_vr <- abs(shift_vr[vrall$changepoint]-shift_vr[vrall$changepoint-1])
 ```
 
 
-\rosalie{I wonder whether we should show the results with random sampling for Fig. \ref{fig:simulation_min_time}: we show later that it is the worst case scenario. But maybe that's a discussion we already had and I am missing on something.
-
-I calculated the autocorrelation at lag-1 for the case_study time series and add it to the plot here.}
+\rosalie{I wonder whether we should show the results with random sampling for the figure showing the minimum number sampled required for different sigma, phi, and shift size: we show later that it is the worst case scenario. But maybe that's a discussion we already had and I am missing on something. <br> I calculated the autocorrelation at lag-1 for the case study time series and added it to the plot here.}
 
 ```{r simulation_min_time_plot, fig.width = 7.2, fig.height= 3, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. Random sampling was used with the default parameters are $\\sigma = 3$, $\\phi = 0.5$, and a shift size $=0.75$. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. Vertical line indicate respective parameter calculated from the case study time series. \\label{fig:simulation_min_time}',message=F,warning=F,echo=F,eval=T}
 
@@ -301,48 +299,77 @@ par(mfrow=c(1,3))
 sigma <- read.csv('Output/theoretical_results_sigma.csv',header=TRUE)
 #plot(sigma$sigma_vec,sigma$min_time,ylab='Minimum number of samples required',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(20,50),col=1,type='o')
 
-p1 <- ggplot(sigma, aes(sigma_vec, min_time)) +
-  geom_point() +
-  geom_line() +
-  geom_vline(xintercept = ar_vr$acf[2], lty=2) +
-  ylim(20,50) +
-  labs(x="sigma", y= "Minimum number of samples required") + 
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-
-
-
 # Phi results
 
 phi <- read.csv('Output/theoretical_results_phi.csv',header=TRUE)
 #plot(phi$phi_vec,phi$min_time,ylab=' ',xlab='phi',pch=16,cex.lab=1.3,las=1,ylim=c(20,50),col=1,type='o')
 
-p2 <- ggplot(phi, aes(phi_vec, min_time)) +
-  geom_point() +
-  geom_line() +
-  geom_vline(xintercept = sd_vr, lty=2) +
-  ylim(20,50) +
-  labs(x="phi", y= "") + 
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 # Shift size results
 
 shift_size <- read.csv('Output/theoretical_results_shift_size.csv',header=TRUE)
 #plot(shift_size$shift_size_vec,shift_size$min_time,ylab=' ',xlab='shift size',pch=16,cex.lab=1.3,las=1,ylim=c(20,50),col=1,type='o')
 
-p3 <- ggplot(shift_size, aes(shift_size_vec, min_time)) +
+# Melt the 3 dataset to be able to use facet_wrap()
+colnames(sigma) <- colnames(phi) <- colnames(shift_size) <- c("X", "Param", "min_time")
+simulation_all <- 
+  rbind(cbind("Parameter" = rep("Standard deviation", nrow(sigma)), sigma),
+      cbind("Parameter" = rep("Autocorrelation at lag-1", nrow(phi)), phi),
+      cbind("Parameter" = rep("Normalized amplitude of shift", nrow(shift_size)), shift_size))
+# param_vr <- data.frame("Parameter" = unique(simulation_all$Parameter),
+#                        "value" = c(ar_vr$acf[2], sd_vr, shift_vr))
+
+p1 <- 
+ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[1]), aes(Param, min_time)) +
   geom_point() +
-  geom_line() + 
-  geom_vline(xintercept = shift_vr, lty=2) +
+  geom_line() +
+  geom_vline(xintercept=ar_vr$acf[2], lty=2) + 
+  facet_wrap(~Parameter, scales="free_x", 
+             labeller = label_glue('(a) {Parameter}')) +
+  ylim(20,50) +
+  labs(x=c("phi"), y= "Minimum number of samples required") + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+p2 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[2]), aes(Param, min_time)) +
+  geom_point() +
+  geom_line() +
+  geom_vline(xintercept = sd_vr, lty=2) +
+  facet_wrap(~Parameter, scales="free_x", 
+             labeller = label_glue('(b) {Parameter}')) +
   ylim(20,50) +
   labs(x="phi", y= "") + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+p3 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[3]), aes(Param, min_time))  +
+  geom_point() +
+  geom_line() + 
+  geom_vline(xintercept = shift_vr, lty=2) +
+  facet_wrap(~Parameter, scales="free_x", 
+             labeller = label_glue('(c) {Parameter}')) +
+  ylim(20,50) +
+  labs(x="shift size", y= "") + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
   
   
-(p1 | p2 | p3)
+# Remove the y-axis for the 2nd plot - p2 then merge 2 plots
+cowplot::plot_grid(p1 + theme(plot.margin = unit(c(0.15, 0.1, 0.15, 0.15), "cm")), 
+                   p2 + 
+                     theme(plot.margin = unit(c(0, 0.1, 0, 0), "cm"),
+                           axis.text.y = element_blank(),
+                           axis.line.y = element_blank(),
+                           axis.title.y= element_blank(),
+                           axis.ticks.y= element_blank()),
+                   p3 + 
+                     theme(plot.margin = unit(c(0, 0.1, 0, 0), "cm"),
+                           axis.text.y = element_blank(),
+                           axis.line.y = element_blank(),
+                           axis.title.y= element_blank(),
+                           axis.ticks.y= element_blank()),
+                   nrow = 1,
+                   rel_widths = c(1.2, 1,1),
+                   align = 'h', axis = 'tb')
 
 ```
 
