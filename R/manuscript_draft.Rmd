@@ -327,7 +327,7 @@ ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[1
   facet_wrap(~Parameter, scales="free_x", 
              labeller = label_glue('a. {Parameter}')) +
   ylim(20,50) +
-  labs(x=c("phi"), y= "Minimum number of samples required") + 
+  labs(x=c("sigma"), y= "Minimum number of samples required") + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         strip.background = element_rect(colour="transparent", fill="transparent"),
