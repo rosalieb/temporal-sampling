@@ -23,11 +23,12 @@ Title: Sampling requirements and approaches to detect ecosystem shifts
 	
 \vspace{7 mm}
 	
-Authors: Rosalie Bruel$^{1}$ and Easton R. White$^{2}$
+Authors: Rosalie Bruel$^{1*}$ and Easton R. White$^{2*}$
 	
 \vspace{5 mm}
 	
 Addresses: $^{1}$Rubenstein Ecosystem Science Laboratory, University of Vermont, VT 05405, USA, https://orcid.org/0000-0001-8351-7539 $^{2}$Department of Biology, University of Vermont, VT 05405, USA, https://orcid.org/0000-0002-0768-9555
+* Both authors contributed contributed equally and order was chosen alphabetically / by latitudinal gradient of birth place 
 
 \vspace{5 mm}
 Keywords: time-series, changepoint \vspace{10 mm}
@@ -641,10 +642,11 @@ p3 | (p_init / p1 / p2)
 
 Outline:
 
-- theoretical results
-- example with the case study
-- how this fits in with other work
-- limitations and future work
+- reexplain and compare the 3 methods (theoretical (Fig 3) vs case study (Fig 4), and how they relate (Fig 2))
+- money implications (before or now)  
+- how this fits in with other work: examples of situation it would be applied (Rosalie)  
+- how this doesn't fit with other work (limitations) (Rosalie)
+- future work  (?)
 
 
 Analyzing a subsample of a time series as opposed to the whole time series will inevitably leads to a lesser understanding of the phenomenon observed [@White2019d]. For example, a continuous sampling allows the calculation of autocorrelation or variance, that can be valuable indicators of critical slowing down (e.g., Dakos and Bascompte, 2014). However, in some cases, analyzing the whole samples collected is not an option, because there is not enough processing time or money available. We show here that an informed subsampling can still allow detection of critical information, such as time series changepoint.
@@ -652,7 +654,9 @@ Analyzing a subsample of a time series as opposed to the whole time series will 
 
 Multiple subsampling strategies can be chosen(Fig. \ref{fig:conceptual}), but only iterative sampling allowed to approach the real changepoint in a limited number of samples (Fig. \ref{fig:simulation_min_time}c). Analyzing 11% of the sample was enough in most cases to approach the "true" changepoint.
 In the context of a real case study, the iterative method allowed to find the main changepoint with 9 samples analyzed (\ref{fig:case_study_number_sample}), with a starting point of 5 randomly distributed samples. Same results for the major change, with only 12% of the samples analyzed. The method also work to detect further shifts (Supplementary Materials 1).
-@Bruel2018 processed one sample at each centimeter in a 74-centimeter sediment core. Each sample took an average of 3 hours to process. We found that using an interval approach would have eliminated `r 3*(74-9)` hours of sample processing, or about `r round(3*(74-9)/8)` days, which is just a little over a month of work. This correspond to several thousands of US dollars depending on labor costs.
+@Bruel2018 processed one sample at each centimeter in a 74-centimeter sediment core. Each sample took an average of 3 hours to process. We found that using an interval approach would have eliminated `r 3*(74-9)` hours of sample processing, or about `r round(3*(74-9)/8)` days, which is just a little over a month of work. This correspond to several thousands of US dollars depending on labor costs. 
+
+
 
 Other dataset that could use our method, e.g., paleo science in general? see review by Wingard et al 2017 https://www.frontiersin.org/articles/10.3389/fevo.2017.00011/full#B140
 
