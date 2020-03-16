@@ -92,18 +92,14 @@ pacman::p_load(patchwork, stickylabeller, ggplot2, dplyr, wesanderson, reshape, 
 <!--
 # Things to do:
 
-- writing intro
+- clean up introduction
 - writing methods/results pair of section
-- writing discussion
-- setting up bibliography system
-- Possible journals: Methods Ecology and Evolution, Biological Conservation, *Journal of Environmental Management*, *Environmental Monitoring and Assessment*, BioScience 
+- build out the supplementary material
+- run theoretical results for more simulations
+- concluding paragraph
+- add citations
+- Possible journals: Journal of Environmental Management, Environmental Monitoring and Assessment, Ecological Applications
 
-
-# Main messages of manuscript
-
-- We can choose the number of samples and effort we use...
-- Number of samples required depends on question asked and the time series parameters
-- Case study of paleo data shows the utility of iterative sampling in detecting change points
 --> 
 
 # Introduction 
@@ -671,10 +667,6 @@ Our approach goes beyond just paleoecological analyses. Running simulations or u
 <!--Limitations paragraph-->
 
 Although our approach is flexible to be applied to various data sources and questions, this is also one of its limitations. The specific number of samples and optimal sampling approach will largely be system specific. A similar system may be used to get some sense for the best sampling scheme, but it will depend on the VARIOUS FACTORS HERE. Similarly, selecting a set number of samples or specific approach may also limit what future questions can be asked. However, more samples could be added to address these additional questions.
-
-- It is not limited to paleo data
-- Depends on the question being asked
-- Specific number of samples depends on the system dynamics
 
 Systematic sampling of a time-series is required to detect critical slowing-down or early warning of shifts (ref, maybe among others Frossard et al 2015, Doncaster et al 2016). The lower number of input data prior to ordination did not impact the finding of the main transition. However, if other metrics are of interest to the investigators, such as species richness, a more systematic or at least more extensive approach would be require.
 
