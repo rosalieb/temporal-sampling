@@ -626,7 +626,9 @@ panel.grid.minor = element_blank(), axis.line = element_blank(), panel.backgroun
         axis.ticks=element_blank(),
 plot.subtitle=element_text(size=11)) +
   geom_text(fakedata[fakedata$Year==75,], mapping = aes(variable,Year, label=c("Year", paste("Sp.", c(1:8,"n")))),  size=2.5,hjust=0,angle = 90) +
+  geom_text(fakedata[fakedata$variable==1&fakedata$Year!=75,], mapping = aes(variable,Year, label=c(vr$AGE)),  size=2.1) +
   labs(subtitle="a. Continuous community dataset")
+
 
 # Assemble plot
 
