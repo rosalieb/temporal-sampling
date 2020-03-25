@@ -169,7 +169,7 @@ source('R/calc_min_time2.R')
 require(tidyverse)
 
 # Sigma results
-sigma_vec = seq(0.01,1,0.05)
+sigma_vec = seq(0.01,1,0.45)
 min_time  = rep(0,times=length(sigma_vec))
 sigma_output <- data.frame(sigma_vec,min_time)
 
@@ -242,7 +242,6 @@ shift_vr <- abs(vr_time_series[vrall$changepoint]-vr_time_series[vrall$changepoi
 ```
 
 
-\rosalie{I wonder whether we should show the results with random sampling for the figure showing the minimum number sampled required for different sigma, phi, and shift size: we show later that it is the worst case scenario. But maybe that's a discussion we already had and I am missing on something. <br> I calculated the autocorrelation at lag-1 for the case study time series and added it to the plot here.}
 
 ```{r simulation_min_time_plot, fig.width = 7.2, fig.height= 3, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. Random sampling was used with the default parameters are $\\sigma = 3$, $\\phi = 0.5$, and a shift size $=0.75$. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. Vertical line indicate respective parameter calculated from the case study time series. \\label{fig:simulation_min_time}',message=F,warning=F,echo=F,eval=T}
 
@@ -413,7 +412,7 @@ p1
 
 ## Case study background
 
-As one application of our approach, we examined paleosequence data. To obtain this data sediment cores are taken from aquatic environments to reconstruct past ecosystems. Samples can be taken before and after perturbation to compare community composition (e.g., ), or at continuously to identify the timing of change, and contribution of environmental variable in driving these changes (e.g., @Perga2015).
+As one application of our approach, we examined paleosequence data. To obtain this data sediment cores were taken from aquatic environments to reconstruct past ecosystems. Samples can be taken before and after perturbation to compare community composition (e.g., ), or at continuously to identify the timing of change, and contribution of environmental variable in driving these changes (e.g., @Perga2015).
 
 We tested different sampling methods on a real community time-series, from Lake Varese (IT). Lake Varese is a small (14.8 km^2^), deep (z$_{max}$= 26m), monomictic lake, in the subalpine region of north-western Italy (238 m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed (ref). Nutrient status was responsible for restructuration of the lake communities across trophic levels [@Crosta1999,@Bruel2018]. Air temperature is now driving changes in plankton communities (@Bruel2018).
 
@@ -603,44 +602,44 @@ Outline:
 - future work  (?)
 
 <!---- reexplain and compare the 3 methods (theoretical (Fig 3) vs case study (Fig 4), and how they relate (Fig 2)) ---->
-There is often a difference between the number of samples analyzed and the total number of samples collected, due to time or funding limitations. When the processing time is disproportionally higher than the collection time especially, a subsampling can be done posterior to sampling. A decision must then be taken of which subsamples to analyze.
-We tested the performance at detecting changepoint of three subsampling methods: subsampling at regular and random interval, and an iterative sampling approach (Fig. \ref{fig:conceptual}). 
+There is often a difference between the number of samples analyzed and the total number of samples collected, due to time or funding limitations. When the processing time is disproportionally higher than the collection time especially, a subsampling can be done posterior to sampling. A decision must then be taken of which subsamples to analyze. To address this question in the context of detecting changepoints, we tested three subsampling methods: subsampling at regular and random interval, and an iterative sampling approach (Fig. \ref{fig:conceptual}). 
 
 We found that the iterative methods was systematically better at detecting changes than the two other methods, the random subsampling being the least efficient (Figs. \ref{simulation_number_sample} and \ref{fig:case_study_number_sample}). Autocorrelation, variance, and shift size, had an effect on how many samples were needed to detect the shift, but did not changed this conclusion.  (Fig. \ref{fig:simulation_min_time}). \rosalie{I'm curious to see, once you'll run Fig. 2 for the  3 methods, whether autocorrelation, shift size and variance really impact iterative method. It seems pretty robust!} 
 
 <!---- money implications ---->
 
-Multiple subsampling strategies can be chosen(Fig. \ref{fig:conceptual}), but only iterative sampling allowed to approach the real changepoint in a limited number of samples (Fig. \ref{fig:simulation_min_time}c). Analyzing 11% of the sample was enough in most cases to approach the "true" changepoint.
+Multiple subsampling strategies can be chosen (Fig. \ref{fig:conceptual}), but only iterative sampling detected the real changepoint with a limited number of samples (Fig. \ref{fig:simulation_min_time}c). Analyzing 11% of the sample was enough in most cases to approach the "true" changepoint.
+
 In the context of a real case study, the iterative method allowed to find the main changepoint with 9 samples analyzed (Fig. \ref{fig:case_study_number_sample}), with a starting point of 5 randomly distributed samples. Same results for the major change, with only 12% of the samples analyzed. The method also work to detect further shifts (Supplementary Materials 1).
 @Bruel2018 processed one sample at each centimeter in a 74-centimeter sediment core. Each sample took an average of 3 hours to process. We found that using an interval approach would have eliminated `r 3*(74-9)` hours of sample processing, or about `r round(3*(74-9)/8)` days, which is just a little over a month of work. This correspond to several thousands of US dollars depending on labor costs. 
 
 
 <!---- how this fits in with other work: examples of situation it would be applied (potential) ---->
 
-Our approach goes beyond just paleoecological analyses. Running simulations or using past data to understand the amount of sampling effort required is important in many systems where sample collection or processing is expensive (citations). The specific sampling techniques can also be compared to determine the optimal strategy in terms of accuracy and cost. Our specific approach in this paper was on data where more samples can be added long after the dynamics occurred. Our interval sampling approach involved taking a fixed number of regularly-spaced samples to start and then adding more samples strategically to detect a changepoint. Suppose instead that the goal was to detect a change in observed individuals with video-based approaches. It is often not practical to watch entire videos, so it can be useful to choose strategic time-points that would address our question of interest. Using an interval sampling approach, one could take a fixed number of samples to start. The trend over time from simple linear regression could be taken. Then, samples can be taken at random locations one-by-one and to see which samples have the largest effect on the trend estimates. If a particular sample has a large effect on the trend, then it would be best to choose another nearby sample. Sampling would continue until the trend estimate began to settle down. Thus, the iterative sampling approach is particularly relevant to data sources where additional samples can be taken long after the initial dynamics. These approaches are also applicable to other questions related to the optimal sample size and approach in determining long-term trends, biodiversity estimates, and more (citations). 
+Our approach goes beyond just paleoecological analyses. Running simulations or using past data to understand the amount of sampling effort required is important in many systems where sample collection or processing is expensive [@White2019,@White2020]. The specific sampling techniques can also be compared to determine the optimal strategy in terms of accuracy and cost. Our specific approach was with data where more samples can be added, or processed, long after the dynamics occurred. Our interval sampling approach involved taking a fixed number of regularly-spaced samples to start and then adding more samples strategically to detect a changepoint. However, both different types of data and different questions can be addressed with the same approach. Suppose instead that the goal was to detect a change in observed individuals with video-based approaches. It is often not practical to watch entire videos, so it can be useful to choose strategic time-points that would address our question of interest (citations). Using an interval sampling approach, one could take a fixed number of samples to start. The trend over time from simple linear regression could be taken. Then, samples can be taken at random locations one-by-one and to see which samples have the largest effect on the trend estimates. If a particular sample has a large effect on the trend, then it would be best to choose another nearby sample. Sampling would continue until the trend estimate reached an equilibrium. Thus, the iterative sampling approach is particularly relevant to data sources where additional samples can be taken long after the initial dynamics. These approaches would also be appropriate for environmental samples, such as water or soil, that can be analyzed later or eDNA that can be extracted from previously-collected samples (citations). 
 
 Other dataset that could use our method, e.g., paleo science in general? see review by Wingard et al 2017 https://www.frontiersin.org/articles/10.3389/fevo.2017.00011/full#B140
 
 
 <!---- how this doesn't fit with other work (limitations) ---->
 
-Although our approach is flexible to be applied to various data sources and questions, this is also one of its limitations. The specific number of samples and optimal sampling approach will largely be system specific. A similar system may be used to get some sense for the best sampling scheme, but it will depend on the VARIOUS FACTORS HERE. Similarly, selecting a set number of samples or specific approach may also limit what future questions can be asked. However, more samples could be added to address these additional questions.
+Although our approach is flexible to be applied to various data sources and questions, this is also one of its limitations. The specific number of samples and optimal sampling approach will largely be system specific. A similar system may be used to get some sense for the best sampling scheme, but it will depend on the system dynamics (e.g. interannual variation, trend effect size). The specific sampling scheme also depends on the question of interest. For instance, changepoint detection may require fewer samples than detecting a change in biodiversity indices (citations). Thus, selecting a set number of samples or specific approach may also limit what future questions can be asked. However, more samples could be processed later to address these additional questions. Lastly, we know systematic sampling of a time-series is required to detect critical slowing-down or early warning of shifts (ref, maybe among others Frossard et al 2015, Doncaster et al 2016). The lower number of input data prior to ordination did not impact the finding of the main transition. However, if other metrics are of interest to the investigators, such as species richness, a more systematic or at least more extensive approach would be require.
 
-Systematic sampling of a time-series is required to detect critical slowing-down or early warning of shifts (ref, maybe among others Frossard et al 2015, Doncaster et al 2016). The lower number of input data prior to ordination did not impact the finding of the main transition. However, if other metrics are of interest to the investigators, such as species richness, a more systematic or at least more extensive approach would be require.
+<!--not sure where to include this 
+Many ecological processes are non linear (e.g., D'Amario et al 2019, Scientific reports). Detecting a changepoint on one aspect of the ecosystem does not guarantee that the sampling resolution is appropriate to detect the driver for the changepoint.--->
 
-
-Many ecological processes are non linear (e.g., D'Amario et al 2019, Scientific reports). Detecting a changepoint on one aspect of the ecosystem does not guarantee that the sampling resolution is appropriate to detect the driver for the changepoint.
 
 <!---- conclusion ---->
+
+Analyzing a subsample of a time series as opposed to the whole time series will inevitably leads to a lesser understanding of the phenomenon observed [@White2019d]. For example, a continuous sampling allows the calculation of autocorrelation or variance, that can be valuable indicators of critical slowing down (e.g., Dakos and Bascompte, 2014). We show here that an informed subsampling can still allow detection of critical information, such as time series changepoint. This is valuable given the high costs of many monitoring programs (citations). Monitoring programs have to be able to address our questions of interest with sufficient statistical power. The costs of monitoring have to weighed against the value gained from monitoring---a value of information approach (@Lovett2007). Monitoring programs should try to anticipate the potential questions of tomorrow, and reducing the data collected must be done with the best foresight possible on how these data may be necessary to manage ecosystems in the future.  
+
+<!--
 Eventually, it is the researchers choice to choose their approach. Our objective was to quantify the implications of an approach vs. another. In the eventuality that the main objective is to detect a changepoint, we find that an approach is largely superior to the two others.
+-->
 
-Analyzing a subsample of a time series as opposed to the whole time series will inevitably leads to a lesser understanding of the phenomenon observed [@White2019d]. For example, a continuous sampling allows the calculation of autocorrelation or variance, that can be valuable indicators of critical slowing down (e.g., Dakos and Bascompte, 2014). However, in some cases, analyzing the whole samples collected is not an option, because there is not enough processing time or money available. We show here that an informed subsampling can still allow detection of critical information, such as time series changepoint.
 
 
-Concluding paragraph:
 
-About recommendation to reduce the frequency of data collected as part of monitoring program:  
-While long-term monitoring program are often expensive, these cost are nothing compared to the value of the resources monitored and the policies affecting these resources (@Lovett2007). Monitoring programs should try to anticipate the potential questions of tomorrow, and reducing the data collected must be done with the best foresight possible on how these data may indeed not be necessary to manage ecosystems in the future.  
 
 \clearpage
 
