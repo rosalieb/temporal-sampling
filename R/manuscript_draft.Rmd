@@ -28,7 +28,7 @@ Authors: Rosalie Bruel$^{1*}$ and Easton R. White$^{2*}$
 \vspace{5 mm}
 	
 Addresses: $^{1}$Rubenstein Ecosystem Science Laboratory, University of Vermont, VT 05405, USA, https://orcid.org/0000-0001-8351-7539 $^{2}$Department of Biology, University of Vermont, VT 05405, USA, https://orcid.org/0000-0002-0768-9555
-* Both authors contributed contributed equally and order was chosen alphabetically / by latitudinal gradient of birth place 
+* Both authors contributed contributed equally and order was chosen alphabetically 
 
 \vspace{5 mm}
 Keywords: time-series, changepoint \vspace{10 mm}
@@ -44,7 +44,7 @@ Number of figures and panels: X
 	
 \vspace{5 mm}
 	
-Submission as: Article at \emph{Ecological Applications}
+Submission as: Article at \emph{Journal of Applied Ecology}
 	
 \vspace{5 mm}
 	
@@ -58,7 +58,7 @@ Preprint available at:
 \textbf{\Large Sampling requirements and approaches to detect ecosystem shifts}
 \vspace{5 mm}
 	
-\textsc{Rosalie Bruel$^{1}$\footnote{The authors contributed equally to this work.} and Easton R. White$^{2}$}
+\textsc{Rosalie Bruel$^{*1}$\footnote{*The authors contributed equally to this work.} and Easton R. White$^{*2}$}
 \vspace{3 mm}
 
 \normalsize{\indent $^{1}$Rubenstein Ecosystem Science Laboratory, University of Vermont, VT 05405, USA \\ $^{2}$Department of Biology, University of Vermont, VT 05405, USA}
@@ -169,7 +169,7 @@ source('R/calc_min_time2.R')
 require(tidyverse)
 
 # Sigma results
-sigma_vec = seq(0.1,30,4)
+sigma_vec = seq(0.01,1,0.05)
 min_time  = rep(0,times=length(sigma_vec))
 sigma_output <- data.frame(sigma_vec,min_time)
 
@@ -269,13 +269,13 @@ simulation_all <-
       cbind("Parameter" = rep("Autocorrelation at lag-1", nrow(phi)), phi),
       cbind("Parameter" = rep("Normalized amplitude of shift", nrow(shift_size)), shift_size))
 # param_vr <- data.frame("Parameter" = unique(simulation_all$Parameter),
-#                        "value" = c(ar_vr$acf[2], sd_vr, shift_vr))
+#                        "value" = c(ar_vr, cv_vr, shift_vr))
 
 p1 <- 
 ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[1]), aes(Param, min_time)) +
   geom_point() +
   geom_line() +
-  geom_vline(xintercept=ar_vr$acf[2], lty=2) + 
+  geom_vline(xintercept=ar_vr, lty=2) + 
   facet_wrap(~Parameter, scales="free_x", 
              labeller = label_glue('a. {Parameter}')) +
   ylim(20,50) +
@@ -287,7 +287,7 @@ ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[1
 p2 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[2]), aes(Param, min_time)) +
   geom_point() +
   geom_line() +
-  geom_vline(xintercept = sd_vr, lty=2) +
+  geom_vline(xintercept = cv_vr, lty=2) +
   facet_wrap(~Parameter, scales="free_x", 
              labeller = label_glue('b. {Parameter}')) +
   ylim(20,50) +
@@ -334,7 +334,7 @@ cowplot::plot_grid(p1 + theme(plot.margin = unit(c(0.15, 0.1, 0.15, 0.15), "cm")
 
 # Simulation results 
 
-In line with theory about monitoring, we found that the probability of correcting identifying a changepoint decreased with smaller levels of population variability ($\sigma$) and autocorrelation ($\phi$). We also found that the probability of correct changepoint detection increases with larger shift sizes, which is essentially the effect size. Thus, the number of sample required to obtain high statistical power (above 0.8) increased with larger population variability, lower autocorrelation, and smaller shift sizes (Fig. \ref{fig:simulation_min_time}). For perspective, the autocorrelation at lag-1 in the first DCA component we used in the case study example later is `r round(ar_vr$acf[2],3)`, the variance is `r round(sd_vr,3)`, and the normalized amplitude of the shift was `r round(shift_vr,3)`.
+In line with theory about monitoring, we found that the probability of correcting identifying a changepoint decreased with smaller levels of population variability ($\sigma$) and autocorrelation ($\phi$). We also found that the probability of correct changepoint detection increases with larger shift sizes, which is essentially the effect size. Thus, the number of sample required to obtain high statistical power (above 0.8) increased with larger population variability, lower autocorrelation, and smaller shift sizes (Fig. \ref{fig:simulation_min_time}). For perspective, the autocorrelation at lag-1 in the first DCA component we used in the case study example later is `r round(ar_vr,3)`, the coefficient of variation is `r round(cv_vr,3)`, and the normalized amplitude of the shift was `r round(shift_vr,3)`.
 
 
 
