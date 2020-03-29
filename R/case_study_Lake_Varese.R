@@ -33,7 +33,7 @@ vrindex <- 1:nrow(vr)
 #Cpt1
 j=3
 myoutput_cpt1 <- NULL
-for (i in 6:30) {
+for (i in 5:30) {
   vrsub <- sample_regular(vr, i, input_vector = F, xcol = 1, DCA_axis = 1, messages = F)
   myoutput_cpt1 <- c(myoutput_cpt1, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
   vrsub <- sample_random(vr, i, input_vector = F, xcol = 1, DCA_axis = 1, messages = F)
@@ -56,7 +56,7 @@ myoutput_cpt1$n2_init <- rep(c(NA,NA,5,6,7), len=nrow(myoutput_cpt1))
 #Cpt2
 j=4
 myoutput_cpt2 <- NULL
-for (i in 6:30) {
+for (i in 5:30) {
   vrsub <- sample_regular(vr, i, input_vector = F, xcol = 1, DCA_axis = 1, messages = F)
   myoutput_cpt2 <- c(myoutput_cpt2, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
   vrsub <- sample_random(vr, i, input_vector = F, xcol = 1, DCA_axis = 1, messages = F)
@@ -79,7 +79,7 @@ myoutput_cpt2$n2_init <- rep(c(NA,NA,5,6,7), len=nrow(myoutput_cpt2))
 #Cpt3
 j=5 
 myoutput_cpt3 <- NULL
-for (i in 6:30) {
+for (i in 5:30) {
   vrsub <- sample_regular(vr, i, input_vector = F, xcol = 1, DCA_axis = 1, messages = F)
   myoutput_cpt3 <- c(myoutput_cpt3, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
   vrsub <- sample_random(vr, i, input_vector = F, xcol = 1, DCA_axis = 1, messages = F)
@@ -99,7 +99,7 @@ myoutput_cpt3$diff_real <- myoutput_cpt3$changepoint-cpvar1$changepoint_all$orde
 myoutput_cpt3$method_f <- factor(myoutput_cpt3$method, levels=c('Random', 'Regular', 'Iterative'))
 myoutput_cpt3$n2_init <- rep(c(NA,NA,5,6,7), len=nrow(myoutput_cpt3))
 
-myoutput <- rbind(myoutput_cpt1,myoutput_cpt2,myoutput_cpt3)
+myoutput <- rbind(myoutput_cpt1,myoutput_cpt2,myoutput_count)
 myoutput$target_cpt <- as.factor(rep(1:3, each=nrow(myoutput_cpt1)))
 myoutput$n2_init[is.na(myoutput$n2_init)] <- 5 
 
@@ -129,4 +129,41 @@ p4 <- ggplot(myoutput, aes(final_n,total_number_found))  +
   labs(title="c",x="", y="Number of changepoint found")
 
 grid.arrange(p1, p2, p4, nrow = 3)
+
+
+##investigating species average biomass ####
+vr_count <- rowSums(vr[,-1])
+cpvar_count <- sample_regular(vr_count, length(vr_count), input_vector = T)
+vrsub <- sample_iterative(vr_count, 12, input_vector = T, messages = F, n2 = 5)
+
+
+myoutput_count <- NULL
+j=3
+for (i in 5:30) {
+  vrsub <- sample_regular(vr_count, i, input_vector = T, messages = F)
+  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
+  vrsub <- sample_random(vr_count, i, input_vector = T, messages = F)
+  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
+  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F)
+  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
+  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F, n2 = 6)
+  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
+  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F, n2 = 7)
+  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
+}
+
+myoutput_count <- data.frame(matrix(myoutput_count, ncol=4, byrow=T))
+myoutput_count[,2] <- as.numeric(paste(myoutput_count[,2]))
+myoutput_count[,3] <- as.numeric(paste(myoutput_count[,3]))
+colnames(myoutput_count) <- c("method", "final_n", "changepoint","total_number_found")
+myoutput_count$diff_real <- myoutput_count$changepoint-cpvar_count$changepoint_all$order.found[3]
+myoutput_count$method_f <- factor(myoutput_count$method, levels=c('Random', 'Regular', 'Iterative'))
+myoutput_count$n2_init <- rep(c(NA,NA,5,6,7), len=nrow(myoutput_count))
+myoutput_count
+
+myoutput_count$target_cpt <- as.factor(rep(1, each=nrow(myoutput_count)))
+myoutput_count$n2_init[is.na(myoutput_count$n2_init)] <- 5 
+#write.table(myoutput_count,"Output/output_changepoint_varese_biomass.txt", sep = "\t")
+
+
 
