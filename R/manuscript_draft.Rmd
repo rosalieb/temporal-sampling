@@ -169,7 +169,7 @@ source('R/calc_min_time2.R')
 require(tidyverse)
 
 # Sigma results
-sigma_vec = seq(0.01,1,0.45)
+sigma_vec = seq(0.01,0.5,0.025)
 min_time  = rep(0,times=length(sigma_vec))
 sigma_output <- data.frame(sigma_vec,min_time)
 
@@ -182,7 +182,7 @@ write.csv(x = sigma_output,file = 'Output/theoretical_results_sigma.csv',quote=F
 
 # Phi results
 
-phi_vec = seq(-0.8,0.8,0.2)
+phi_vec = seq(-0.8,0.8,0.4)
 min_time  = rep(0,times=length(phi_vec))
 phi_output <- data.frame(phi_vec,min_time)
 
@@ -196,7 +196,7 @@ write.csv(x = phi_output,file = 'Output/theoretical_results_phi.csv',quote=FALSE
 
 # Shift size
 
-shift_size_vec = rev(seq(0.1,0.9,0.025))
+shift_size_vec = rev(seq(0.1,0.9,0.05))
 min_time  = rep(0,times=length(shift_size_vec))
 shift_size_output <- data.frame(shift_size_vec,min_time)
 
@@ -274,10 +274,10 @@ p1 <-
 ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[1]), aes(Param, min_time)) +
   geom_point() +
   geom_line() +
-  geom_vline(xintercept=ar_vr, lty=2) + 
+  geom_vline(xintercept=0.05, lty=2) + 
   facet_wrap(~Parameter, scales="free_x", 
              labeller = label_glue('a. {Parameter}')) +
-  ylim(20,50) +
+  ylim(10,50) +
   labs(x=c("sigma"), y= "Minimum number of samples required") + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -286,10 +286,10 @@ ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[1
 p2 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[2]), aes(Param, min_time)) +
   geom_point() +
   geom_line() +
-  geom_vline(xintercept = cv_vr, lty=2) +
+  geom_vline(xintercept = 0.404, lty=2) +
   facet_wrap(~Parameter, scales="free_x", 
              labeller = label_glue('b. {Parameter}')) +
-  ylim(20,50) +
+  ylim(10,50) +
   labs(x="phi", y= "") + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -298,10 +298,10 @@ p2 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parame
 p3 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[3]), aes(Param, min_time))  +
   geom_point() +
   geom_line() + 
-  geom_vline(xintercept = shift_vr, lty=2) +
+  geom_vline(xintercept = 0.81, lty=2) +
   facet_wrap(~Parameter, scales="free_x", 
              labeller = label_glue('c. {Parameter}')) +
-  ylim(20,50) +
+  ylim(10,50) +
   labs(x="shift size", y= "") + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
