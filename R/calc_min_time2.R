@@ -1,17 +1,17 @@
 
-calc_min_time = function(param_name,param_value){
+calc_min_time = function(param_name,param_value,sampling_approach){
 
 #sigma_level = 20
 power_level = 0.8
-sample_size = 15
+sample_size = 10
 gap_size = 5
 prob_correct = 0
 #combined_correct = NULL
 
 switch(param_name,
        sigma = {params <- tibble(sigma=rep(param_value,50))},
-       phi = {params <- tibble(phi=rep(param_value,100))},
-       shift_size = {params <- tibble(shift_size=rep(param_value,100))},
+       phi = {params <- tibble(phi=rep(param_value,50))},
+       shift_size = {params <- tibble(shift_size=rep(param_value,50))},
        shift_time = {params <- tibble(shift_time=rep(param_value,100))}
 )
 
@@ -21,13 +21,24 @@ params$shift_time = sample(30:70,nrow(params),replace = T)
 time_series <- params %>%
   pmap(build_time_series) 
 
-while (prob_correct<power_level & sample_size<50){
+while (prob_correct<power_level & sample_size<85){
   sample_size = sample_size + gap_size
+
+if (sampling_approach == 'regular'){
+  output <- time_series %>% map_dbl(function(df) sample_regular(df,sample_size)$changepoint) %>% mutate(params,detection=.)
+}else if (sampling_approach == 'random'){
+  output <- time_series %>% map_dbl(function(df) sample_random(df,sample_size)$changepoint) %>% mutate(params,detection=.)
+}else if (sampling_approach == 'iterative'){
+  output <- time_series %>% map_dbl(function(df) sample_iterative(df,sample_size)$changepoint) %>% mutate(params,detection=.)
+}else{
+    
+  }
+
   
   # Sample regular for each time series
-  output <- time_series %>%
-    map_dbl(function(df) sample_regular(df,sample_size)$changepoint) %>%
-    mutate(params,detection=.)
+#  output <- time_series %>%
+#    map_dbl(function(df) sample_regular(df,sample_size)$changepoint) %>%
+#    mutate(params,detection=.)
   
   names(output) = c('param_name','shift_time','detection')
   output$detection[is.na(output$detection)] <- 0
@@ -52,7 +63,7 @@ if (as.numeric(prob_correct) > power_level & gap_size > 1){
   
 } # End of while loop  
 
-if(sample_size>15 & sample_size<51){
+if(sample_size>10 & sample_size<75){
   return(as.numeric(sample_size))
 }else{
   return(NA)
