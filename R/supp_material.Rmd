@@ -59,10 +59,12 @@ We first detect the ``true" changepoint of a full length time series with the fu
   
 The subsampled time series are then compared to the full time series to assess the effectiveness of each subsampling approach.
 
-Each function works with two types of input: vector and matrix. If the input is a matrix, the user must change the default argument *is_vector* to *FALSE*. The matrix is transformed to independent vectors using Detrented Correspondance Analysis [@hill_detrended_1980], and a single axis on which changepoint analysis is run is chosen with the argument *DCA_axis* (default to 1, for first component). 
+Each function works with two types of input: vector and matrix. If the input is a matrix, the user must change the default argument *is_vector* to *FALSE*. The matrix is then transformed to independent vectors using Detrented Correspondance Analysis [@hill_detrended_1980], and a single axis on which changepoint analysis is run is chosen with the argument *DCA_axis* (default to 1, for first component). Component scores are returned by the funtion. User can edit the function to use another ordination method (e.g., principal component analysis).
 
 
-# Parameter sensitivity
+# Method's sensitivity for varying parameters
+
+We investivated how different parameters change the power of the analysis, and found that autocorrelation at lag-1 (phi) had little impact on the power of the analysis amplitude of the shift was the most important determinant of the power of the analysis. For null standard deviation, the analysis performed well independently of the shift size or autocorrelation. When standard deviation increased, the power of the analysis was higher for null autocorrelation (Fig. \ref{fig:parameter_sensitivity_plot}).
 
 ```{r parameter_sensitivity,message=F,warning=F,echo=F,eval=F,cache=F}
 # Build 1x3 plot with sigma vs phi with color equal to distance to changepoint, power, or min time. The three panel plots would represent different shift size values
@@ -414,9 +416,11 @@ cowplot::plot_grid(p1 + theme(plot.margin = unit(c(0.15, 0.1, 0.15, 0.15), "cm")
 
 
 
-# Case study
+# Detecting further changepoints
 
+The initial study found 3 changepoints on the main axis, in 1926/1928, 1946/1948 and 1983/1988 [@Bruel2018]. We focused our analysis on the main changepoint, but the code also allows to target further changepoints, using the argument *c*. *c* is a numeric value indicating the maximum number of changepoints to find (Fig. \ref{fig:case_study_other_changepoints}).
 
+The iterative method requires overall less subsamples to find the real changepoints (Fig. \ref{fig:case_study_other_changepoints}, 3rd column). Note that if the initial number of samples (controled with the argument *n2* in the code) is at the default 5, the code struggles to rank appropriately the changepoints, resulting in a changepoint being found, but not the overall "true" second  (e.g., Fig. \ref{fig:case_study_other_changepoints}b, 3rd column), or "true" third. In a time-series, we recommend users to examinethe p-values returned by the *e.divisive* function, embeded in the funtion *sample_iterative* output. If the first few changepoints have close, low, p-values, it may be worth to not directly pursue a subsample close to the first changepoint, but also add another subsample further away. An alternative is to initiate the subsampling with an higher number of samples, e.g., 7 subsamples.
 
 ```{r case study read data output, include=FALSE}
 myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese.txt"))
@@ -464,23 +468,37 @@ grid.arrange(p1,p2,p3,nrow=3)
 
 ## Case study: biomass
 
-```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Distance to real changepoint in biomass per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.  \\label{fig:case_study_number_sample}'}
-#investigating species average biomass
-vr_count <- rowSums(vr[,-1])
-myoutput_count <- NULL
-j=3
-for (i in 5:30) {
-  vrsub <- sample_regular(vr_count, i, input_vector = T, messages = F)
-  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
-  vrsub <- sample_random(vr_count, i, input_vector = T, messages = F)
-  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
-  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F)
-  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
-  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F, n2 = 6)
-  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
-  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F, n2 = 7)
-  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
+
+
+```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width = 4, fig.height= 3, fig.cap='Number of individuals per gram of sediment, infered from Cladocera remains for the 74 subsamples of the Lake Varese sediment core.   \\label{fig:case_study_biomass_per_year}'}
+# Investigating change in species average biomass
+# Read code
+source('R/sampling_regular.R')
+# Read data
+getpath4data <- function() {
+  if(Sys.getenv("USER")=="Rosalie") return("/Volumes/-/Script R/Data-off-GitHub/temporal-sampling/")
+  if(Sys.getenv("USER")=="eastonwhite") return("~/Desktop/Research/soil-temporal-sampling/")
+  if(Sys.getenv("USER")!="Rosalie"|Sys.getenv("USER")!="put here your USER") stop("You need to get the data and define their location.")
 }
+vr <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt"))
+vr_count <- data.frame(Year=vr[,1], Biomass=rowSums(vr[,-1]))
+cpvar_count <- sample_regular(vr_count[,2], nrow(vr_count), input_vector = T, messages = F)
+
+
+
+ggplot(vr_count, aes(Year, Biomass)) + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        strip.background = element_rect(colour="transparent", fill="transparent")) +
+           geom_rect(mapping=aes(xmin=vr_count$Year[cpvar_count$changepoint-1], xmax=vr_count$Year[cpvar_count$changepoint], ymin=0, ymax=max(vr_count)), alpha=0.05, fill="grey") + 
+  geom_line() +
+  labs(y="Number of individuals / g")
+
+```
+
+For further ilustration, we reproduced the approach on a single vector. We re-used the community dataset from Lake Varese, but this time, looked at the number of individuals per gram of sediment in each subsamples. The full time series show a changepoint in `r paste(vr_count$Year[cpvar_count$changepoint], vr_count$Year[cpvar_count$changepoint-1], sep="/")`. We used the three changepoint method to estimate changepoint on the vector, and found that the iterative method, with an initial number of 5 regularly-spaced subsamples, performed best (Fig. \ref{fig:case_study_number_sample_biomass}).
+
+```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Distance to real changepoint in biomass per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.   \\label{fig:case_study_number_sample_biomass}'}
 
 myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese_biomass.txt"))
 myoutput$method <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterative'))
@@ -507,7 +525,7 @@ p1
 ```
 
 
-(Fig. \ref{fig:case_study_number_sample_change_biomass})
+
 
 
 
