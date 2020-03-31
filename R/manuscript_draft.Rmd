@@ -578,6 +578,7 @@ p1
 
 
 
+<<<<<<< HEAD
 ```{r echo=FALSE, eval=F,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Distance to real changepoint in biomass per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.  \\label{fig:case_study_number_sample}'}
 #investigating species average biomass
 vr_count <- rowSums(vr[,-1])
@@ -622,6 +623,8 @@ p1
 
 \rosalie{About figure \ref{fig:case_study_number_sample_change_biomass}, I tried testing the real changepoint on another potential metric, i.e., biomass. Potential tools for discussion? I don't know! Maybe worth talking about that during our next Skype.}
 
+=======
+>>>>>>> 0313792537ed95a7de943ff3ea2138d6714225f3
 # General Discussion
 
 <!--
