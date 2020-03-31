@@ -12,7 +12,7 @@ header-includes: \usepackage{float} \usepackage{lineno} \usepackage{setspace}\do
   \renewcommand{\thesection}{Appendix S\arabic{section}} \renewcommand{\thetable}{S\arabic{table}}
   \renewcommand{\thefigure}{S\arabic{figure}}
   \usepackage{amsmath}
-  \renewcommand{\theequation}{S\arabic{equation}}
+  \renewcommand{\theequation}{S\arabic{equation}} \floatplacement{figure}{H}
 output:
   pdf_document:
     fig_caption: yes
@@ -23,6 +23,8 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_knit$set(root.dir = dirname(getwd()))
 ```
+
+
 
 
 \begin{center}
@@ -46,49 +48,99 @@ Data and code for all the figures can be found at (https://github.com/rosalieb/t
 
 \clearpage
 
+
 # Additional text
 
-We wrote three functions: 
-\begin{itemize}
-  \item sample_random(): sample first and last sample, in addition of n-2 random samples in between (n = maximum number of sample, chosen by the user),  
-  \item sample_regular(): sample first and last sample, in addition of n-2 evenly spaced samples in between (n = maximum number of samples, chosen by the user),  
-  \item sample_iterative(): sample first and last sample as well as 3 evenly spaced samples in between (3 is the default but can be modified), in order to initiate the changepoint detection. Upon detection of the changepoint on this 5 samples time series, a new sample is added between the changepoint and the previous sample, to narrow down the real changepoint. Detection of changepoint and addition of sample is repeated, until it was narrowed down to two consecutive samples, or n (maximum number of samples, chosen by the user) was reached, whichever comes first.  
-\end{itemize}
 
-# Additional figures
+We first detect the ``true" changepoint of a full length time series with the function _e.divisive_ in the R package _ecp_ [@James2019]. We focus on the changepoint with the largest magnitude, altough this package allows lower order changepoint detection as well (Fig. \ref{fig:case_study_other_changepoints}). We then subsample the full time series [@White2020] with different numbers of subsamples and different sampling approaches. For each sampling approach, we wrote a custom function:
 
-## Simulation approach
+- sample_random(): sample first and last sample, in addition of n-2 random samples in between (n = maximum number of sample, chosen by the user),  
+- sample_regular(): sample first and last sample, in addition of n-2 evenly spaced samples in between (n = maximum number of samples, chosen by the user), and  
+- sample_iterative(): sample first and last sample as well as 3 evenly spaced samples in between (3 is the default but can be modified), in order to initiate the changepoint detection. Upon detection of the changepoint on this 5 samples time series, a new sample is added between the changepoint and the previous sample, to narrow down the real changepoint. Detection of changepoint and addition of sample is repeated, until it was narrowed down to two consecutive samples, or n (maximum number of samples, chosen by the user) was reached, whichever comes first.  
+  
+The subsampled time series are then compared to the full time series to assess the effectiveness of each subsampling approach.
 
-```{r theoretical_results,message=F,warning=F,echo=F,eval=F}
+
+# Parameter sensitivity
+
+```{r parameter_sensitivity,message=F,warning=F,echo=F,eval=F,cache=F}
+# Build 1x3 plot with sigma vs phi with color equal to distance to changepoint, power, or min time. The three panel plots would represent different shift size values
 
 source('R/sampling_regular.R')
 source('R/sampling_random.R')
 source('R/build_time_series.R')
-source('R/updated_param_sensitivity.R')
-
+source('R/calc_min_time2.R')
 require(tidyverse)
 
-par(mfrow=c(2,2))
-# Sigma plot
-sigma15 <- param_sensitivity('sigma',15)
-plot(sigma15,ylab='Probability correct',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(0,1),col=1)
+number_sims <- 10
+# Find minimum time for different parameter combos
 
-sigma20 <- param_sensitivity('sigma',20)
-points(sigma20,ylab='Probability correct',xlab='sigma',pch=15,cex.lab=1.3,las=1,ylim=c(0,1),col=3)
+sigma_vec = seq(0.01,0.3,0.02)
+phi_vec = seq(-0.8,0.8,0.1)
+shift_size_vec = c(0.1,0.4,0.8)
 
-# phi plot
-phi15 <- param_sensitivity('phi',15)
-plot(phi15,ylab='Probability correct',xlab='phi',pch=16,cex.lab=1.3,las=1,ylim=c(0,1),col=1)
+output_theory_approach <- data.frame(expand.grid(sigma_vec,phi_vec,shift_size_vec))
+names(output_theory_approach) <- c('sigma_vec', 'phi_vec', 'shift_size_vec')
+output_theory_approach$power = 0
 
-phi20 <- param_sensitivity('phi',20)
-points(phi20,ylab='Probability correct',xlab='phi',pch=15,cex.lab=1.3,las=1,ylim=c(0,1),col=3)
+#params <- tibble(shift_time = sample(30:70,max(simulation_number),replace = T))
+
+shift_time = sample(30:70,number_sims,replace=T) # Keep shift times constant for each param combo
+                  
+# Run through params
+for (i in 1:nrow(output_theory_approach)){
+
+# Build XX number of time series
+params <- list(sigma=rep(output_theory_approach$sigma_vec[i],number_sims),phi=rep(output_theory_approach$phi_vec[i],number_sims),shift_size=rep(output_theory_approach$shift_size_vec[i],number_sims),shift_time = shift_time)
+
+time_series <- params %>%
+  pmap(build_time_series) %>%
+  map_dbl(function(df) sample_regular(df,20)$changepoint) 
+
+power <- sum(abs(time_series-shift_time)<5)/number_sims
+
+#print(i)
+output_theory_approach$power[i] <- power
+}
+
+
+
+write.csv(x = output_theory_approach,file = 'Output/parameter_sensitivity.csv',quote = FALSE )
+
+require(ggplot2)
+require(viridis)
+ggplot(aes(x=phi_vec,y=sigma_vec,fill=power),data=output_theory_approach) + geom_tile() +
+   scale_fill_viridis(discrete=FALSE,begin = 0.1,end=0.9) +
+  facet_wrap(~shift_size_vec) +
+   labs(fill='Statistical power') +
+   xlab("Lag-1 autocorrelation (phi)") +
+   ylab("Standard deviation (sigma)") +
+   theme_classic(base_size = 14, base_family = "")
 
 ```
 
+```{r parameter_sensitivity_plot,echo=F,message=F,warnings=F,fig.height=4,fig.cap='Regular sampling statistical power (fraction of 100 simulations which detecting a changepoint within five time points of the true changepoint) for different levels of standard deviation, lag-1 autocorrelation, and shift size.\\label{fig:parameter_sensitivity_plot}'}
+output_theory_approach <- read.csv(file = 'Output/parameter_sensitivity.csv')
 
-```{r theoretical_results_min_time,message=F,warning=F,echo=F,eval=F}
+require(ggplot2)
+require(viridis)
+ggplot(aes(x=phi_vec,y=sigma_vec,fill=power),data=output_theory_approach) + geom_tile() +
+   scale_fill_viridis(discrete=FALSE,begin = 0.1,end=0.9) +
+  facet_wrap(~shift_size_vec) + 
+   theme_classic(base_size = 14, base_family = "")+
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+   labs(fill='Power',subtitle = 'Shift size') +
+   xlab("Lag-1 autocorrelation (phi)") +
+   ylab("Standard deviation (sigma)")
+```
 
-source('R/sampling_regular.R')
+
+# Minimum time for other sampling approaches
+
+## Random sampling
+
+```{r simulation_min_time_random,message=F,warning=F,echo=F,eval=F,cache=T}
+
 source('R/sampling_random.R')
 source('R/build_time_series.R')
 source('R/updated_param_sensitivity.R')
@@ -96,106 +148,264 @@ source('R/calc_min_time2.R')
 require(tidyverse)
 
 # Sigma results
-sigma_vec = seq(0.1,30,4)
+sigma_vec = seq(0.01,0.4,0.025)
 min_time  = rep(0,times=length(sigma_vec))
 sigma_output <- data.frame(sigma_vec,min_time)
 
 for (param_num in 1:nrow(sigma_output)){
-  sigma_output$min_time[param_num] <- calc_min_time('sigma',sigma_output$sigma_vec[param_num])
-  print(sigma_output)
+  sigma_output$min_time[param_num] <- calc_min_time('sigma',sigma_output$sigma_vec[param_num],'random')
+  #print(sigma_output)
 }
 
-write.csv(x = sigma_output,file = 'Output/theoretical_results_sigma.csv',quote=FALSE)
+write.csv(x = sigma_output,file = 'Output/theoretical_results_random_sigma.csv',quote=FALSE)
 
 # Phi results
 
-phi_vec = seq(-0.8,0.8,0.2)
+phi_vec = seq(-0.8,0.8,0.05)
 min_time  = rep(0,times=length(phi_vec))
 phi_output <- data.frame(phi_vec,min_time)
 
 for (param_num in 1:nrow(phi_output)){
-  phi_output$min_time[param_num] <- calc_min_time('phi',phi_output$phi_vec[param_num])
-  print(phi_output)
+  phi_output$min_time[param_num] <- calc_min_time('phi',phi_output$phi_vec[param_num],'random')
+  #print(phi_output)
 }
 
-write.csv(x = phi_output,file = 'Output/theoretical_results_phi.csv',quote=FALSE)
+write.csv(x = phi_output,file = 'Output/theoretical_results_random_phi.csv',quote=FALSE)
 
 
 # Shift size
 
-shift_size_vec = rev(seq(0.1,0.9,0.025))
+shift_size_vec = rev(seq(0.1,0.9,0.05))
 min_time  = rep(0,times=length(shift_size_vec))
 shift_size_output <- data.frame(shift_size_vec,min_time)
 
 for (param_num in 1:nrow(shift_size_output)){
-  shift_size_output$min_time[param_num] <- calc_min_time('shift_size',shift_size_output$shift_size_vec[param_num])
-  print(shift_size_output)
+  shift_size_output$min_time[param_num] <- calc_min_time('shift_size',shift_size_output$shift_size_vec[param_num],'random')
+  #print(shift_size_output)
 }
 
-write.csv(x = shift_size_output,file = 'Output/theoretical_results_shift_size.csv',quote=FALSE)
+write.csv(x = shift_size_output,file = 'Output/theoretical_results_random_shift_size.csv',quote=FALSE)
 
 
 ```
 
 
-```{r theoretical_results_min_time_plot, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. The default parameters are $\\sigma = 3$, $\\phi = 0.5$, and a shift size $=0.75$. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. \\label{fig:theoretical_min_time}',message=F,warning=F,echo=F,eval=T}
 
+```{r simulation_min_time_plot_random, fig.width = 7.2, fig.height= 3, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. Random sampling was used with the default parameters are $\\sigma = 0.53$, $\\phi = 0.404$, and a shift size $=0.81$ to match the case study. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. Each vertical line indicates the respective parameter calculated from the case study time series. \\label{fig:simulation_min_time_random}',message=F,warning=F,echo=F,eval=T}
+require(ggplot2)
+require(dplyr)
+require(stickylabeller)
 par(mfrow=c(1,3))
 
-sigma <- read.csv('Output/theoretical_results_sigma.csv',header=TRUE)
-plot(sigma$sigma_vec,sigma$min_time,ylab='Minimum number of samples required',xlab='sigma',pch=16,cex.lab=1.3,las=1,ylim=c(20,50),col=1,type='o')
+sigma <- read.csv('Output/theoretical_results_random_sigma.csv',header=TRUE)
+
+phi <- read.csv('Output/theoretical_results_random_phi.csv',header=TRUE)
+
+shift_size <- read.csv('Output/theoretical_results_random_shift_size.csv',header=TRUE)
 
 
-# Phi results
+# Melt the 3 dataset to be able to use facet_wrap()
+colnames(sigma) <- colnames(phi) <- colnames(shift_size) <- c("X", "Param", "min_time")
+simulation_all <- 
+  rbind(cbind("Parameter" = rep("Standard deviation", nrow(sigma)), sigma),
+        cbind("Parameter" = rep("Autocorrelation at lag-1", nrow(phi)), phi),
+        cbind("Parameter" = rep("Normalized amplitude of shift", nrow(shift_size)), shift_size))
+# param_vr <- data.frame("Parameter" = unique(simulation_all$Parameter),
+#                        "value" = c(ar_vr, cv_vr, shift_vr))
 
-phi <- read.csv('Output/theoretical_results_phi.csv',header=TRUE)
-plot(phi$phi_vec,phi$min_time,ylab=' ',xlab='phi',pch=16,cex.lab=1.3,las=1,ylim=c(20,50),col=1,type='o')
+p1 <- 
+  ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[1]), aes(Param, min_time)) +
+  geom_point() +
+  geom_line() +
+  geom_vline(xintercept=0.05, lty=2) + 
+  facet_wrap(~Parameter, scales="free_x", 
+             labeller = label_glue('a. {Parameter}')) +
+  ylim(10,52) +
+  labs(x=c("sigma"), y= "Minimum number of samples required") + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        strip.background = element_rect(colour="transparent", fill="transparent"),
+        strip.text.x = element_text(angle = 0, hjust = 0))
+p2 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[2]), aes(Param, min_time)) +
+  geom_point() +
+  geom_line() +
+  geom_vline(xintercept = 0.404, lty=2) +
+  facet_wrap(~Parameter, scales="free_x", 
+             labeller = label_glue('b. {Parameter}')) +
+  ylim(10,52) +
+  labs(x="phi", y= "") + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        strip.background = element_rect(colour="transparent", fill="transparent"),
+        strip.text.x = element_text(angle = 0, hjust = 0))
+p3 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[3]), aes(Param, min_time))  +
+  geom_point() +
+  geom_line() + 
+  geom_vline(xintercept = 0.81, lty=2) +
+  facet_wrap(~Parameter, scales="free_x", 
+             labeller = label_glue('c. {Parameter}')) +
+  ylim(10,52) +
+  labs(x="shift size", y= "") + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        strip.background = element_rect(colour="transparent", fill="transparent"),
+        strip.text.x = element_text(angle = 0, hjust = 0))
 
 
-# Shift size results
-
-shift_size <- read.csv('Output/theoretical_results_shift_size.csv',header=TRUE)
-plot(shift_size$shift_size_vec,shift_size$min_time,ylab=' ',xlab='shift size',pch=16,cex.lab=1.3,las=1,ylim=c(20,50),col=1,type='o')
-
+# Remove the y-axis for the 2nd plot - p2 then merge 2 plots
+cowplot::plot_grid(p1 + theme(plot.margin = unit(c(0.15, 0.1, 0.15, 0.15), "cm")), 
+                   p2 + 
+                     theme(plot.margin = unit(c(0, 0.1, 0, 0), "cm"),
+                           axis.text.y = element_blank(),
+                           axis.line.y = element_blank(),
+                           axis.title.y= element_blank(),
+                           axis.ticks.y= element_blank()),
+                   p3 + 
+                     theme(plot.margin = unit(c(0, 0.1, 0, 0), "cm"),
+                           axis.text.y = element_blank(),
+                           axis.line.y = element_blank(),
+                           axis.title.y= element_blank(),
+                           axis.ticks.y= element_blank()),
+                   nrow = 1,
+                   rel_widths = c(1.2, 1,1),
+                   align = 'h', axis = 'tb')
 
 ```
 
 
 
-```{r theoretical_results_sampling_approaches,message=F,warning=F,echo=F,eval=F}
 
-source('R/sampling_regular.R')
-source('R/sampling_random.R')
+## Iterative sampling
+
+```{r simulation_min_time_iterative,message=F,warning=F,echo=F,eval=F,cache=T}
+
+
+source('R/sampling_iterative.R')
 source('R/build_time_series.R')
 source('R/updated_param_sensitivity.R')
 source('R/calc_min_time2.R')
 require(tidyverse)
 
-# Need to run each method on a set of simulated time series. We would then have 100 runs for each method and each sampling amount
+# Sigma results
+sigma_vec = seq(0.01,0.4,0.025)
+min_time  = rep(0,times=length(sigma_vec))
+sigma_output <- data.frame(sigma_vec,min_time)
 
-approach <- c('random','regular','iterative')
-number_samples <- 1:30
-simulation_number <- 1:100
-output_theory_approach <- data.frame(expand.grid(approach,number_samples,simulation_number))
-names(output_theory_approach) <- c('approach', 'number_samples', 'simulation_number')
-output_theory_approach$distance_to_real = 0
-
-# Build function that takes in approach, simulated time series, and number of samples. The function should then spit out the distance to the real changepoint
-
-# Set of time series (need other params)
-params <- tibble(shift_time = sample(30:70,nrow(params),replace = T))
-
-time_series <- params %>%
-  pmap(build_time_series) 
-
-# Run through params
-
-for (i in 1:nrow(output_theory_approach)){
-  
-  output_theory_approach$distance_to_real[i] <- calc_distance_to_real(output_theory_approach$approach,output_theory_approach$number_samples,time_series[output_theory_approach$simulation_number])
+for (param_num in 1:nrow(sigma_output)){
+  sigma_output$min_time[param_num] <- calc_min_time('sigma',sigma_output$sigma_vec[param_num],'iterative')
+  #print(sigma_output)
 }
 
+write.csv(x = sigma_output,file = 'Output/theoretical_results_iterative_sigma.csv',quote=FALSE)
 
+# Phi results
+
+phi_vec = seq(-0.8,0.8,0.05)
+min_time  = rep(0,times=length(phi_vec))
+phi_output <- data.frame(phi_vec,min_time)
+
+for (param_num in 1:nrow(phi_output)){
+  phi_output$min_time[param_num] <- calc_min_time('phi',phi_output$phi_vec[param_num],'iterative')
+  #print(phi_output)
+}
+
+write.csv(x = phi_output,file = 'Output/theoretical_results_iterative_phi.csv',quote=FALSE)
+
+
+# Shift size
+
+shift_size_vec = rev(seq(0.1,0.9,0.05))
+min_time  = rep(0,times=length(shift_size_vec))
+shift_size_output <- data.frame(shift_size_vec,min_time)
+
+for (param_num in 1:nrow(shift_size_output)){
+  shift_size_output$min_time[param_num] <- calc_min_time('shift_size',shift_size_output$shift_size_vec[param_num],'iterative')
+  #print(shift_size_output)
+}
+
+write.csv(x = shift_size_output,file = 'Output/theoretical_results_iterative_shift_size.csv',quote=FALSE)
+
+
+```
+
+
+
+```{r simulation_min_time_plot_iterative, fig.width = 7.2, fig.height= 3, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. Iterative sampling was used with the default parameters are $\\sigma = 0.53$, $\\phi = 0.404$, and a shift size $=0.81$ to match the case study. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. Each vertical line indicates the respective parameter calculated from the case study time series. \\label{fig:simulation_min_time}',message=F,warning=F,echo=F,eval=T}
+
+par(mfrow=c(1,3))
+
+sigma <- read.csv('Output/theoretical_results_iterative_sigma.csv',header=TRUE)
+
+phi <- read.csv('Output/theoretical_results_iterative_phi.csv',header=TRUE)
+
+shift_size <- read.csv('Output/theoretical_results_iterative_shift_size.csv',header=TRUE)
+
+
+# Melt the 3 dataset to be able to use facet_wrap()
+colnames(sigma) <- colnames(phi) <- colnames(shift_size) <- c("X", "Param", "min_time")
+simulation_all <- 
+  rbind(cbind("Parameter" = rep("Standard deviation", nrow(sigma)), sigma),
+        cbind("Parameter" = rep("Autocorrelation at lag-1", nrow(phi)), phi),
+        cbind("Parameter" = rep("Normalized amplitude of shift", nrow(shift_size)), shift_size))
+# param_vr <- data.frame("Parameter" = unique(simulation_all$Parameter),
+#                        "value" = c(ar_vr, cv_vr, shift_vr))
+
+p1 <- 
+  ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[1]), aes(Param, min_time)) +
+  geom_point() +
+  geom_line() +
+  geom_vline(xintercept=0.05, lty=2) + 
+  facet_wrap(~Parameter, scales="free_x", 
+             labeller = label_glue('a. {Parameter}')) +
+  ylim(10,50) +
+  labs(x=c("sigma"), y= "Minimum number of samples required") + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        strip.background = element_rect(colour="transparent", fill="transparent"),
+        strip.text.x = element_text(angle = 0, hjust = 0))
+p2 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[2]), aes(Param, min_time)) +
+  geom_point() +
+  geom_line() +
+  geom_vline(xintercept = 0.404, lty=2) +
+  facet_wrap(~Parameter, scales="free_x", 
+             labeller = label_glue('b. {Parameter}')) +
+  ylim(10,50) +
+  labs(x="phi", y= "") + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        strip.background = element_rect(colour="transparent", fill="transparent"),
+        strip.text.x = element_text(angle = 0, hjust = 0))
+p3 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parameter)[3]), aes(Param, min_time))  +
+  geom_point() +
+  geom_line() + 
+  geom_vline(xintercept = 0.81, lty=2) +
+  facet_wrap(~Parameter, scales="free_x", 
+             labeller = label_glue('c. {Parameter}')) +
+  ylim(10,50) +
+  labs(x="shift size", y= "") + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        strip.background = element_rect(colour="transparent", fill="transparent"),
+        strip.text.x = element_text(angle = 0, hjust = 0))
+
+
+# Remove the y-axis for the 2nd plot - p2 then merge 2 plots
+cowplot::plot_grid(p1 + theme(plot.margin = unit(c(0.15, 0.1, 0.15, 0.15), "cm")), 
+                   p2 + 
+                     theme(plot.margin = unit(c(0, 0.1, 0, 0), "cm"),
+                           axis.text.y = element_blank(),
+                           axis.line.y = element_blank(),
+                           axis.title.y= element_blank(),
+                           axis.ticks.y= element_blank()),
+                   p3 + 
+                     theme(plot.margin = unit(c(0, 0.1, 0, 0), "cm"),
+                           axis.text.y = element_blank(),
+                           axis.line.y = element_blank(),
+                           axis.title.y= element_blank(),
+                           axis.ticks.y= element_blank()),
+                   nrow = 1,
+                   rel_widths = c(1.2, 1,1),
+                   align = 'h', axis = 'tb')
 
 ```
 
@@ -203,10 +413,7 @@ for (i in 1:nrow(output_theory_approach)){
 
 
 
-
-
-
-## Case study
+# Case study
 
 
 
@@ -217,7 +424,7 @@ myoutput$method_f <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iter
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 8}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 8,fig.cap='Distance to true (a) first changepoint (largest magnitude), (b) second changepoint, and (c) third changepoint for total number of samples analyzed, following random sampling, regular sampling, and iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.  \\label{fig:case_study_other_changepoints}'}
 library(ggplot2)
 library(gridExtra)
 p1 <- ggplot(myoutput[myoutput$target_cpt==1,], aes(final_n,diff_real, pch=factor(n2_init))) + 
@@ -256,6 +463,6 @@ grid.arrange(p1,p2,p3,nrow=3)
 
 
 
-
+\clearpage
 
 ## References
