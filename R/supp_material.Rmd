@@ -49,16 +49,17 @@ Data and code for all the figures can be found at (https://github.com/rosalieb/t
 \clearpage
 
 
-# Additional text
+# Additional methods
 
-
-We first detect the ``true" changepoint of a full length time series with the function _e.divisive_ in the R package _ecp_ [@James2019]. We focus on the changepoint with the largest magnitude, altough this package allows lower order changepoint detection as well (Fig. \ref{fig:case_study_other_changepoints}). We then subsample the full time series [@White2020] with different numbers of subsamples and different sampling approaches. For each sampling approach, we wrote a custom function:
+We first detect the ``true" changepoint of a full length time series with the function _e.divisive_ in the R package _ecp_ [@James2019]. We focus on the changepoint with the largest magnitude, altough this package allows detection of further changepoints as well (Fig. \ref{fig:case_study_other_changepoints}). We then subsample the full time series [@White2020] with different numbers of subsamples and different sampling approaches. For each sampling approach, we wrote a custom function:
 
 - sample_random(): sample first and last sample, in addition of n-2 random samples in between (n = maximum number of sample, chosen by the user),  
 - sample_regular(): sample first and last sample, in addition of n-2 evenly spaced samples in between (n = maximum number of samples, chosen by the user), and  
 - sample_iterative(): sample first and last sample as well as 3 evenly spaced samples in between (3 is the default but can be modified), in order to initiate the changepoint detection. Upon detection of the changepoint on this 5 samples time series, a new sample is added between the changepoint and the previous sample, to narrow down the real changepoint. Detection of changepoint and addition of sample is repeated, until it was narrowed down to two consecutive samples, or n (maximum number of samples, chosen by the user) was reached, whichever comes first.  
   
 The subsampled time series are then compared to the full time series to assess the effectiveness of each subsampling approach.
+
+Each function works with two types of input: vector and matrix. If the input is a matrix, the user must change the default argument *is_vector* to *FALSE*. The matrix is transformed to independent vectors using Detrented Correspondance Analysis [@hill_detrended_1980], and a single axis on which changepoint analysis is run is chosen with the argument *DCA_axis* (default to 1, for first component). 
 
 
 # Parameter sensitivity
@@ -460,6 +461,53 @@ p3 <- ggplot(myoutput[myoutput$target_cpt==3,], aes(final_n,diff_real, pch=facto
 grid.arrange(p1,p2,p3,nrow=3)
 ```
 
+
+## Case study: biomass
+
+```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Distance to real changepoint in biomass per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.  \\label{fig:case_study_number_sample}'}
+#investigating species average biomass
+vr_count <- rowSums(vr[,-1])
+myoutput_count <- NULL
+j=3
+for (i in 5:30) {
+  vrsub <- sample_regular(vr_count, i, input_vector = T, messages = F)
+  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
+  vrsub <- sample_random(vr_count, i, input_vector = T, messages = F)
+  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
+  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F)
+  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
+  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F, n2 = 6)
+  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
+  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F, n2 = 7)
+  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
+}
+
+myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese_biomass.txt"))
+myoutput$method <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterative'))
+myoutput$diff_real <- abs(myoutput$diff_real)
+
+
+# Plot
+p1 <-
+  ggplot(myoutput[myoutput$target_cpt==1 & myoutput$n2_init == 5,], aes(final_n,diff_real)) + 
+  geom_hline(aes(yintercept=0), col=adjustcolor("black", alpha.f = .4)) + 
+  geom_point(alpha = .3) +
+  facet_wrap(~method,
+             labeller = label_glue('{.l}. {method} sampling ')) + 
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        strip.background = element_rect(colour="transparent", fill="transparent"),
+        strip.text.x = element_text(angle = 0, hjust = 0)) +
+  labs(x="Total number of samples analyzed", y="Distance to real changepoint") 
+
+
+p1
+
+
+```
+
+
+(Fig. \ref{fig:case_study_number_sample_change_biomass})
 
 
 
