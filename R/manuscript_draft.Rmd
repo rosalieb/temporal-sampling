@@ -578,53 +578,6 @@ p1
 
 
 
-<<<<<<< HEAD
-```{r echo=FALSE, eval=F,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Distance to real changepoint in biomass per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.  \\label{fig:case_study_number_sample}'}
-#investigating species average biomass
-vr_count <- rowSums(vr[,-1])
-myoutput_count <- NULL
-for (i in 5:30) {
-  vrsub <- sample_regular(vr_count, i, input_vector = T, messages = F)
-  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
-  vrsub <- sample_random(vr_count, i, input_vector = T, messages = F)
-  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
-  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F)
-  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
-  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F, n2 = 6)
-  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
-  vrsub <- sample_iterative(vr_count, i, input_vector = T, messages = F, n2 = 7)
-  myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
-}
-
-myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese_biomass.txt"))
-myoutput$method <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterative'))
-myoutput$diff_real <- abs(myoutput$diff_real)
-
-
-# Plot
-p1 <-
-  ggplot(myoutput[myoutput$target_cpt==1 & myoutput$n2_init == 5,], aes(final_n,diff_real)) + 
-  geom_hline(aes(yintercept=0), col=adjustcolor("black", alpha.f = .4)) + 
-  geom_point(alpha = .3) +
-  facet_wrap(~method,
-             labeller = label_glue('{.l}. {method} sampling ')) + 
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        strip.background = element_rect(colour="transparent", fill="transparent"),
-        strip.text.x = element_text(angle = 0, hjust = 0)) +
-  labs(x="Total number of samples analyzed", y="Distance to real changepoint") 
-
-
-p1
-
-
-```
-
-
-\rosalie{About figure \ref{fig:case_study_number_sample_change_biomass}, I tried testing the real changepoint on another potential metric, i.e., biomass. Potential tools for discussion? I don't know! Maybe worth talking about that during our next Skype.}
-
-=======
->>>>>>> 0313792537ed95a7de943ff3ea2138d6714225f3
 # General Discussion
 
 <!--
