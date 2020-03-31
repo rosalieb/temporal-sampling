@@ -582,7 +582,6 @@ p1
 #investigating species average biomass
 vr_count <- rowSums(vr[,-1])
 myoutput_count <- NULL
-j=3
 for (i in 5:30) {
   vrsub <- sample_regular(vr_count, i, input_vector = T, messages = F)
   myoutput_count <- c(myoutput_count, vrsub$method, vrsub$final_n, vrsub$changepoint_all$order.found[j], length(vrsub$changepoint_all$estimates)-2)
