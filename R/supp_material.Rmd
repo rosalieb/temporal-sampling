@@ -466,7 +466,7 @@ grid.arrange(p1,p2,p3,nrow=3)
 ```
 
 
-## Case study: biomass
+# Case study: changepoint on a vector of number of individuals
 
 
 
