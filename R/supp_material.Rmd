@@ -51,12 +51,13 @@ Data and code for all the figures can be found at (https://github.com/rosalieb/t
 
 # Additional text
 
-For each sampling approach, we wrote three custom functions:
+We first detect the ``true" changepoint of a full length time series with the function _e.divisive_ in the R package _ecp_ [@James2019]. We focus on the changepoint with the largest magnitude, altough this package allows lower order changepoint detection as well (Fig. \ref{fig:case_study_other_changepoints}). We then subsample the full time series [@White2020] with different numbers of subsamples and different sampling approaches. For each sampling approach, we wrote a custom function:
 
 - sample_random(): sample first and last sample, in addition of n-2 random samples in between (n = maximum number of sample, chosen by the user),  
 - sample_regular(): sample first and last sample, in addition of n-2 evenly spaced samples in between (n = maximum number of samples, chosen by the user), and  
 - sample_iterative(): sample first and last sample as well as 3 evenly spaced samples in between (3 is the default but can be modified), in order to initiate the changepoint detection. Upon detection of the changepoint on this 5 samples time series, a new sample is added between the changepoint and the previous sample, to narrow down the real changepoint. Detection of changepoint and addition of sample is repeated, until it was narrowed down to two consecutive samples, or n (maximum number of samples, chosen by the user) was reached, whichever comes first.  
   
+The subsampled time series are then compared to the full time series to assess the effectiveness of each subsampling approach.
 
 
 # Parameter sensitivity
@@ -140,8 +141,6 @@ ggplot(aes(x=phi_vec,y=sigma_vec,fill=power),data=output_theory_approach) + geom
 ```{r simulation_min_time_random,message=F,warning=F,echo=F,eval=F,cache=T}
 
 source('R/sampling_random.R')
-source('R/sampling_regular.R')
-source('R/sampling_iterative.R')
 source('R/build_time_series.R')
 source('R/updated_param_sensitivity.R')
 source('R/calc_min_time2.R')
@@ -220,7 +219,7 @@ p1 <-
   geom_vline(xintercept=0.05, lty=2) + 
   facet_wrap(~Parameter, scales="free_x", 
              labeller = label_glue('a. {Parameter}')) +
-  ylim(10,50) +
+  ylim(10,52) +
   labs(x=c("sigma"), y= "Minimum number of samples required") + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -232,7 +231,7 @@ p2 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parame
   geom_vline(xintercept = 0.404, lty=2) +
   facet_wrap(~Parameter, scales="free_x", 
              labeller = label_glue('b. {Parameter}')) +
-  ylim(10,50) +
+  ylim(10,52) +
   labs(x="phi", y= "") + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -244,7 +243,7 @@ p3 <- ggplot(simulation_all %>% filter(Parameter == unique(simulation_all$Parame
   geom_vline(xintercept = 0.81, lty=2) +
   facet_wrap(~Parameter, scales="free_x", 
              labeller = label_glue('c. {Parameter}')) +
-  ylim(10,50) +
+  ylim(10,52) +
   labs(x="shift size", y= "") + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -424,7 +423,7 @@ myoutput$method_f <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iter
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 8}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 8,fig.cap='Distance to true (a) first changepoint (largest magnitude), (b) second changepoint, and (c) third changepoint for total number of samples analyzed, following random sampling, regular sampling, and iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.  \\label{fig:case_study_other_changepoints}'}
 library(ggplot2)
 library(gridExtra)
 p1 <- ggplot(myoutput[myoutput$target_cpt==1,], aes(final_n,diff_real, pch=factor(n2_init))) + 
