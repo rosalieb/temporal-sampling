@@ -487,7 +487,7 @@ cpvar_count <- sample_regular(vr_count[,2], nrow(vr_count), input_vector = T, me
 For further ilustration, we reproduced the approach on a single vector. We re-used the community dataset from Lake Varese, but this time, looked at the number of individuals per gram of sediment in each subsamples. The full time series show a changepoint in `r paste(vr_count$Year[cpvar_count$changepoint], vr_count$Year[cpvar_count$changepoint-1], sep="/")`. We used the three changepoint method to estimate changepoint on the vector, and found that the iterative method, with an initial number of 5 regularly-spaced subsamples, performed best (Fig. \ref{fig:case_study_number_sample_biomass}).
 
 
-```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width = 4, fig.height= 3, fig.cap='Number of individuals per gram of sediment, infered from Cladocera remains for the 74 subsamples of the Lake Varese sediment core.   \\label{fig:case_study_biomass_per_year}'}
+```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width = 4, fig.height= 3, fig.cap='Number of individuals per gram of sediment, infered from Cladocera remains for the 74 subsamples of the Lake Varese sediment core. Vertical grey band indicates the "true" changepoint.   \\label{fig:case_study_biomass_per_year}'}
 # plot
 ggplot(vr_count, aes(Year, Biomass)) + 
   theme_bw() +
