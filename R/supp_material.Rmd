@@ -62,7 +62,7 @@ The subsampled time series are then compared to the full time series to assess t
 Each function works with two types of input: vector and matrix. If the input is a matrix, the user must change the default argument *is_vector* to *FALSE*. The matrix is then transformed to independent vectors using Detrented Correspondance Analysis [@hill_detrended_1980], and a single axis on which changepoint analysis is run is chosen with the argument *DCA_axis* (default to 1, for first component). Component scores are returned by the funtion. User can edit the function to use another ordination method (e.g., principal component analysis).
 
 
-# Method's sensitivity for varying parameters
+# Method sensitivity for varying parameters
 
 We investivated how different parameters change the power of the analysis, and found that autocorrelation at lag-1 (phi) had little impact on the power of the analysis amplitude of the shift was the most important determinant of the power of the analysis. For null standard deviation, the analysis performed well independently of the shift size or autocorrelation. When standard deviation increased, the power of the analysis was higher for null autocorrelation (Fig. \ref{fig:parameter_sensitivity_plot}).
 
@@ -468,9 +468,7 @@ grid.arrange(p1,p2,p3,nrow=3)
 
 # Case study: changepoint on a vector of number of individuals
 
-
-
-```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width = 4, fig.height= 3, fig.cap='Number of individuals per gram of sediment, infered from Cladocera remains for the 74 subsamples of the Lake Varese sediment core.   \\label{fig:case_study_biomass_per_year}'}
+```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 # Investigating change in species average biomass
 # Read code
 source('R/sampling_regular.R')
@@ -484,8 +482,13 @@ vr <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt"))
 vr_count <- data.frame(Year=vr[,1], Biomass=rowSums(vr[,-1]))
 cpvar_count <- sample_regular(vr_count[,2], nrow(vr_count), input_vector = T, messages = F)
 
+```
+
+For further ilustration, we reproduced the approach on a single vector. We re-used the community dataset from Lake Varese, but this time, looked at the number of individuals per gram of sediment in each subsamples. The full time series show a changepoint in `r paste(vr_count$Year[cpvar_count$changepoint], vr_count$Year[cpvar_count$changepoint-1], sep="/")`. We used the three changepoint method to estimate changepoint on the vector, and found that the iterative method, with an initial number of 5 regularly-spaced subsamples, performed best (Fig. \ref{fig:case_study_number_sample_biomass}).
 
 
+```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width = 4, fig.height= 3, fig.cap='Number of individuals per gram of sediment, infered from Cladocera remains for the 74 subsamples of the Lake Varese sediment core.   \\label{fig:case_study_biomass_per_year}'}
+# plot
 ggplot(vr_count, aes(Year, Biomass)) + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -496,7 +499,6 @@ ggplot(vr_count, aes(Year, Biomass)) +
 
 ```
 
-For further ilustration, we reproduced the approach on a single vector. We re-used the community dataset from Lake Varese, but this time, looked at the number of individuals per gram of sediment in each subsamples. The full time series show a changepoint in `r paste(vr_count$Year[cpvar_count$changepoint], vr_count$Year[cpvar_count$changepoint-1], sep="/")`. We used the three changepoint method to estimate changepoint on the vector, and found that the iterative method, with an initial number of 5 regularly-spaced subsamples, performed best (Fig. \ref{fig:case_study_number_sample_biomass}).
 
 ```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Distance to real changepoint in biomass per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.   \\label{fig:case_study_number_sample_biomass}'}
 
