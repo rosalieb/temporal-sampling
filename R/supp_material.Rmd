@@ -1,5 +1,5 @@
 ---
-bibliography: Whitebib.bib
+bibliography: ChangepointSampling.bib
 csl: ecology-letters.csl
 editor_options:
   chunk_output_type: console
@@ -43,7 +43,7 @@ knitr::opts_knit$set(root.dir = dirname(getwd()))
 
 \vspace{1cm}
 
-Data and code for all the figures can be found at (https://github.com/rosalieb/temporal-sampling.git). All the analyses were run in R (citation).
+Data and code for all the figures can be found at (https://github.com/rosalieb/temporal-sampling). All the analyses were run in R [@RCoreTeam2019].
 
 
 \clearpage
@@ -51,7 +51,7 @@ Data and code for all the figures can be found at (https://github.com/rosalieb/t
 
 # Additional methods
 
-We first detect the ``true" changepoint of a full length time series with the function _e.divisive_ in the R package _ecp_ [@James2019]. We focus on the changepoint with the largest magnitude, altough this package allows detection of further changepoints as well (Fig. \ref{fig:case_study_other_changepoints}). We then subsample the full time series [@White2020] with different numbers of subsamples and different sampling approaches. For each sampling approach, we wrote a custom function:
+We first detect the "true" changepoint of a full length time series with the function _e.divisive_ in the R package _ecp_ [@James2019]. We focus on the changepoint with the largest magnitude, although this package allows detection of further changepoints as well (Fig. \ref{fig:case_study_other_changepoints}). We then subsample the full time series [@White2020] with different numbers of subsamples and different sampling approaches. For each sampling approach, we wrote a custom function:
 
 - sample_random(): sample first and last sample, in addition of n-2 random samples in between (n = maximum number of sample, chosen by the user),  
 - sample_regular(): sample first and last sample, in addition of n-2 evenly spaced samples in between (n = maximum number of samples, chosen by the user), and  
@@ -59,12 +59,12 @@ We first detect the ``true" changepoint of a full length time series with the fu
   
 The subsampled time series are then compared to the full time series to assess the effectiveness of each subsampling approach.
 
-Each function works with two types of input: vector and matrix. If the input is a matrix, the user must change the default argument *is_vector* to *FALSE*. The matrix is then transformed to independent vectors using Detrented Correspondance Analysis [@hill_detrended_1980], and a single axis on which changepoint analysis is run is chosen with the argument *DCA_axis* (default to 1, for first component). Component scores are returned by the funtion. User can edit the function to use another ordination method (e.g., principal component analysis).
+Each function works with two types of input: vector and matrix. If the input is a matrix, the user must change the default argument *is_vector* to *FALSE*. The matrix is then transformed to independent vectors using Detrended Correspondence Analysis [@Hill1980], and a single axis on which changepoint analysis is run is chosen with the argument *DCA_axis* (default to 1, for first component). Component scores are returned by the function. A user can edit the function to use another ordination method (e.g., principal component analysis).
 
 
-# Method sensitivity for varying parameters
+# Parameter sensitivity
 
-We investivated how different parameters change the power of the analysis, and found that autocorrelation at lag-1 (phi) had little impact on the power of the analysis amplitude of the shift was the most important determinant of the power of the analysis. For null standard deviation, the analysis performed well independently of the shift size or autocorrelation. When standard deviation increased, the power of the analysis was higher for null autocorrelation (Fig. \ref{fig:parameter_sensitivity_plot}).
+We investigated how different parameters change the power of the analysis, and found that autocorrelation at lag-1 (phi) had little impact on the power of the analysis amplitude of the shift was the most important determinant of the power of the analysis. For null standard deviation, the analysis performed well independently of the shift size or autocorrelation. When standard deviation increased, the power of the analysis was higher for null autocorrelation (Fig. \ref{fig:parameter_sensitivity_plot}).
 
 ```{r parameter_sensitivity,message=F,warning=F,echo=F,eval=F,cache=F}
 # Build 1x3 plot with sigma vs phi with color equal to distance to changepoint, power, or min time. The three panel plots would represent different shift size values
@@ -294,9 +294,9 @@ sigma_vec = seq(0.01,0.4,0.025)
 min_time  = rep(0,times=length(sigma_vec))
 sigma_output <- data.frame(sigma_vec,min_time)
 
-for (param_num in 1:nrow(sigma_output)){
+for (param_num in 11:nrow(sigma_output)){
   sigma_output$min_time[param_num] <- calc_min_time('sigma',sigma_output$sigma_vec[param_num],'iterative')
-  #print(sigma_output)
+  print(sigma_output)
 }
 
 write.csv(x = sigma_output,file = 'Output/theoretical_results_iterative_sigma.csv',quote=FALSE)
@@ -420,7 +420,7 @@ cowplot::plot_grid(p1 + theme(plot.margin = unit(c(0.15, 0.1, 0.15, 0.15), "cm")
 
 The initial study found 3 changepoints on the main axis, in 1926/1928, 1946/1948 and 1983/1988 [@Bruel2018]. We focused our analysis on the main changepoint, but the code also allows to target further changepoints, using the argument *c*. *c* is a numeric value indicating the maximum number of changepoints to find (Fig. \ref{fig:case_study_other_changepoints}).
 
-The iterative method requires overall less subsamples to find the real changepoints (Fig. \ref{fig:case_study_other_changepoints}, 3rd column). Note that if the initial number of samples (controled with the argument *n2* in the code) is at the default 5, the code struggles to rank appropriately the changepoints, resulting in a changepoint being found, but not the overall "true" second  (e.g., Fig. \ref{fig:case_study_other_changepoints}b, 3rd column), or "true" third. In a time-series, we recommend users to examinethe p-values returned by the *e.divisive* function, embeded in the funtion *sample_iterative* output. If the first few changepoints have close, low, p-values, it may be worth to not directly pursue a subsample close to the first changepoint, but also add another subsample further away. An alternative is to initiate the subsampling with an higher number of samples, e.g., 7 subsamples.
+The iterative method requires less subsamples overall to find the real changepoints (Fig. \ref{fig:case_study_other_changepoints}, 3rd column). Note that if the initial number of samples (controlled with the argument *n2* in the code) is at the default 5, the code struggles to rank appropriately the changepoints, resulting in a changepoint being found, but not the overall "true" second  (e.g., Fig. \ref{fig:case_study_other_changepoints}b, 3rd column), or "true" third. For a time-series, we recommend users examine the p-values returned by the *e.divisive* function, embedded in the function *sample_iterative* output. If the first few changepoints have close, low p-values, it may be useful to add another subsample further away from the presumed changepoint. This avoids the iterative algorithm mistakenly converging on the wrong changepoint. An alternative is to initiate the subsampling with an higher number of samples, e.g., 7 subsamples.
 
 ```{r case study read data output, include=FALSE}
 myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese.txt"))
@@ -466,7 +466,7 @@ grid.arrange(p1,p2,p3,nrow=3)
 ```
 
 
-# Case study: changepoint on a vector of number of individuals
+# Case study: Changepoint detection of abundance time series
 
 ```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE}
 # Investigating change in species average biomass
@@ -484,7 +484,7 @@ cpvar_count <- sample_regular(vr_count[,2], nrow(vr_count), input_vector = T, me
 
 ```
 
-For further ilustration, we reproduced the approach on a single vector. We re-used the community dataset from Lake Varese, but this time, looked at the number of individuals per gram of sediment in each subsamples. The full time series show a changepoint in `r paste(vr_count$Year[cpvar_count$changepoint], vr_count$Year[cpvar_count$changepoint-1], sep="/")`. We used the three changepoint method to estimate changepoint on the vector, and found that the iterative method, with an initial number of 5 regularly-spaced subsamples, performed best (Fig. \ref{fig:case_study_number_sample_biomass}).
+As another example of our approach, we we re-used the community dataset from Lake Varese, but this time, looked at the total number of individuals per gram of sediment in each subsamples. Thus, this is a univariate time series as opposed to the community-level data used in the main text. The full time series show a changepoint in `r paste(vr_count$Year[cpvar_count$changepoint], vr_count$Year[cpvar_count$changepoint-1], sep="/")`. We used the three changepoint method to estimate changepoint on the vector, and found that the iterative method, with an initial number of 5 regularly-spaced subsamples, performed best (Fig. \ref{fig:case_study_number_sample_biomass}).
 
 
 ```{r echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE, fig.width = 4, fig.height= 3, fig.cap='Number of individuals per gram of sediment, infered from Cladocera remains for the 74 subsamples of the Lake Varese sediment core. Vertical grey band indicates the "true" changepoint.   \\label{fig:case_study_biomass_per_year}'}
