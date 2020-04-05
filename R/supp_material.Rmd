@@ -414,9 +414,9 @@ cowplot::plot_grid(p1 + theme(plot.margin = unit(c(0.15, 0.1, 0.15, 0.15), "cm")
 
 
 
+# Supplementary Materials to the case study
 
-
-# Detecting further changepoints
+## Detecting further changepoints
 
 The initial study found 3 changepoints on the main axis, in 1926/1928, 1946/1948 and 1983/1988 [@Bruel2018]. We focused our analysis on the main changepoint, but the code also allows to target further changepoints, using the argument *c*. *c* is a numeric value indicating the maximum number of changepoints to find (Fig. \ref{fig:case_study_other_changepoints}).
 
