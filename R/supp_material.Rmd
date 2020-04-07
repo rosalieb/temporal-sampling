@@ -28,13 +28,14 @@ knitr::opts_knit$set(root.dir = dirname(getwd()))
 
 
 \begin{center}
-\textbf{\Large Supplementary Material for: Sampling requirements and approaches to detect ecosystem shifts}
-\vspace{7 mm}
-	
-\textsc{Rosalie Bruel$^{1}$ and Easton R. White$^{2}$}
+\textbf{\Large Supplementary material for: Sampling requirements and approaches to detect ecosystem shifts}
 \vspace{5 mm}
+	
+\textsc{Rosalie Bruel$^{*}$\footnote{*The authors contributed equally to this work. $\dagger$Corresponding author (eastonrwhite@gmail.com)} and Easton R. White$^{* \dagger 2,3}$}
+\vspace{3 mm}
 
-\normalsize{\indent $^{1}$Rubenstein Ecosystem Science Laboratory, University of Vermont, VT 05405, USA \\ $^{2}$Department of Biology, University of Vermont, VT 05405, USA}
+\normalsize{\indent $^{1}$Rubenstein Ecosystem Science Laboratory, University of Vermont, VT, USA \\ $^{2}$Department of Biology, University of Vermont, VT, USA \\
+$^{3}$Gund Institute for Environment, University of Vermont, VT, USA}
 \end{center}
 
 \vspace{2 mm}
@@ -61,81 +62,11 @@ The subsampled time series are then compared to the full time series to assess t
 
 Each function works with two types of input: vector and matrix. If the input is a matrix, the user must change the default argument *is_vector* to *FALSE*. The matrix is then transformed to independent vectors using Detrended Correspondence Analysis [@Hill1980], and a single axis on which changepoint analysis is run is chosen with the argument *DCA_axis* (default to 1, for first component). Component scores are returned by the function. A user can edit the function to use another ordination method (e.g., principal component analysis).
 
-
+<!--
 # Parameter sensitivity
 
 We investigated how different parameters change the power of the analysis, and found that autocorrelation at lag-1 (phi) had little impact on the power of the analysis amplitude of the shift was the most important determinant of the power of the analysis. For null standard deviation, the analysis performed well independently of the shift size or autocorrelation. When standard deviation increased, the power of the analysis was higher for null autocorrelation (Fig. \ref{fig:parameter_sensitivity_plot}).
-
-```{r parameter_sensitivity,message=F,warning=F,echo=F,eval=F,cache=F}
-# Build 1x3 plot with sigma vs phi with color equal to distance to changepoint, power, or min time. The three panel plots would represent different shift size values
-
-source('R/sampling_regular.R')
-source('R/sampling_random.R')
-source('R/build_time_series.R')
-source('R/calc_min_time2.R')
-require(tidyverse)
-
-number_sims <- 10
-# Find minimum time for different parameter combos
-
-sigma_vec = seq(0.01,0.3,0.02)
-phi_vec = seq(-0.8,0.8,0.1)
-shift_size_vec = c(0.1,0.4,0.8)
-
-output_theory_approach <- data.frame(expand.grid(sigma_vec,phi_vec,shift_size_vec))
-names(output_theory_approach) <- c('sigma_vec', 'phi_vec', 'shift_size_vec')
-output_theory_approach$power = 0
-
-#params <- tibble(shift_time = sample(30:70,max(simulation_number),replace = T))
-
-shift_time = sample(30:70,number_sims,replace=T) # Keep shift times constant for each param combo
-                  
-# Run through params
-for (i in 1:nrow(output_theory_approach)){
-
-# Build XX number of time series
-params <- list(sigma=rep(output_theory_approach$sigma_vec[i],number_sims),phi=rep(output_theory_approach$phi_vec[i],number_sims),shift_size=rep(output_theory_approach$shift_size_vec[i],number_sims),shift_time = shift_time)
-
-time_series <- params %>%
-  pmap(build_time_series) %>%
-  map_dbl(function(df) sample_regular(df,20)$changepoint) 
-
-power <- sum(abs(time_series-shift_time)<5)/number_sims
-
-#print(i)
-output_theory_approach$power[i] <- power
-}
-
-
-
-write.csv(x = output_theory_approach,file = 'Output/parameter_sensitivity.csv',quote = FALSE )
-
-require(ggplot2)
-require(viridis)
-ggplot(aes(x=phi_vec,y=sigma_vec,fill=power),data=output_theory_approach) + geom_tile() +
-   scale_fill_viridis(discrete=FALSE,begin = 0.1,end=0.9) +
-  facet_wrap(~shift_size_vec) +
-   labs(fill='Statistical power') +
-   xlab("Lag-1 autocorrelation (phi)") +
-   ylab("Standard deviation (sigma)") +
-   theme_classic(base_size = 14, base_family = "")
-
-```
-
-```{r parameter_sensitivity_plot,echo=F,message=F,warnings=F,fig.height=4,fig.cap='Regular sampling statistical power (fraction of 100 simulations which detecting a changepoint within five time points of the true changepoint) for different levels of standard deviation, lag-1 autocorrelation, and shift size.\\label{fig:parameter_sensitivity_plot}'}
-output_theory_approach <- read.csv(file = 'Output/parameter_sensitivity.csv')
-
-require(ggplot2)
-require(viridis)
-ggplot(aes(x=phi_vec,y=sigma_vec,fill=power),data=output_theory_approach) + geom_tile() +
-   scale_fill_viridis(discrete=FALSE,begin = 0.1,end=0.9) +
-  facet_wrap(~shift_size_vec) + 
-   theme_classic(base_size = 14, base_family = "")+
-  theme(plot.subtitle = element_text(hjust = 0.5)) +
-   labs(fill='Power',subtitle = 'Shift size') +
-   xlab("Lag-1 autocorrelation (phi)") +
-   ylab("Standard deviation (sigma)")
-```
+-->
 
 
 # Minimum time for other sampling approaches
@@ -285,7 +216,7 @@ cowplot::plot_grid(p1 + theme(plot.margin = unit(c(0.15, 0.1, 0.15, 0.15), "cm")
 
 source('R/sampling_iterative.R')
 source('R/build_time_series.R')
-source('R/updated_param_sensitivity.R')
+#source('R/updated_param_sensitivity.R')
 source('R/calc_min_time2.R')
 require(tidyverse)
 
@@ -294,7 +225,7 @@ sigma_vec = seq(0.01,0.4,0.025)
 min_time  = rep(0,times=length(sigma_vec))
 sigma_output <- data.frame(sigma_vec,min_time)
 
-for (param_num in 11:nrow(sigma_output)){
+for (param_num in 1:nrow(sigma_output)){
   sigma_output$min_time[param_num] <- calc_min_time('sigma',sigma_output$sigma_vec[param_num],'iterative')
   print(sigma_output)
 }
@@ -462,6 +393,18 @@ p3 <- ggplot(myoutput[myoutput$target_cpt==3,], aes(final_n,diff_real, pch=facto
   guides(pch=guide_legend(title="Initial number\nof sample"))
 grid.arrange(p1,p2,p3,nrow=3)
 ```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Case study: Changepoint detection of abundance time series
