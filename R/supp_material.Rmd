@@ -80,6 +80,7 @@ source('R/build_time_series.R')
 source('R/updated_param_sensitivity.R')
 source('R/calc_min_time2.R')
 require(tidyverse)
+require(stickylabeller)
 
 # Sigma results
 sigma_vec = seq(0.01,0.4,0.025)
@@ -125,7 +126,7 @@ write.csv(x = shift_size_output,file = 'Output/theoretical_results_random_shift_
 
 
 
-```{r simulation_min_time_plot_random, fig.width = 7.2, fig.height= 3, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. Random sampling was used with the default parameters are $\\sigma = 0.53$, $\\phi = 0.404$, and a shift size $=0.81$ to match the case study. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. Each vertical line indicates the respective parameter calculated from the case study time series. \\label{fig:simulation_min_time_random}',message=F,warning=F,echo=F,eval=T}
+```{r simulation_min_time_plot_random, fig.width = 7.2, fig.height= 3, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. Random sampling was used with the default parameters are $\\sigma = 0.53$, $\\phi = 0.404$, and a shift size $=0.81$ to match the case study. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. Each vertical line indicates the respective parameter calculated from the case study time series. \\label{fig:simulation_min_time_random}',message=F,warning=F,echo=F,eval=F}
 require(ggplot2)
 require(dplyr)
 require(stickylabeller)
@@ -207,7 +208,20 @@ cowplot::plot_grid(p1 + theme(plot.margin = unit(c(0.15, 0.1, 0.15, 0.15), "cm")
 ```
 
 
+```{r parameter_sensitivity_plot_random,echo=F,message=F,warnings=F,fig.height=4,fig.cap='Random sampling statistical power (fraction of 100 simulations which detected a changepoint within five time points of the true changepoint) for different levels of standard deviation ($\\sigma$), lag-1 autocorrelation ($\\phi$), and shift size ($\\delta$). For each parameter combination, 20 samples were used. An increase in samples would increase the statistical power across this graph.\\label{fig:parameter_sensitivity_plot_random}'}
+output_theory_approach <- read.csv(file = 'Output/parameter_sensitivity_random.csv')
 
+require(ggplot2)
+require(viridis)
+ggplot(aes(x=phi_vec,y=sigma_vec,fill=power),data=output_theory_approach) + geom_tile() +
+  scale_fill_viridis(discrete=FALSE,begin = 0.1,end=0.9, limits=c(0,1)) +
+  facet_wrap(~shift_size_vec) + 
+  theme_classic(base_size = 14, base_family = "")+
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  labs(fill='Power',subtitle = 'Shift size') +
+  xlab("Lag-1 autocorrelation (phi)") +
+  ylab("Standard deviation (sigma)")
+```
 
 ## Iterative sampling
 
@@ -264,7 +278,7 @@ write.csv(x = shift_size_output,file = 'Output/theoretical_results_iterative_shi
 
 
 
-```{r simulation_min_time_plot_iterative, fig.width = 7.2, fig.height= 3, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. Iterative sampling was used with the default parameters are $\\sigma = 0.53$, $\\phi = 0.404$, and a shift size $=0.81$ to match the case study. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. Each vertical line indicates the respective parameter calculated from the case study time series. \\label{fig:simulation_min_time}',message=F,warning=F,echo=F,eval=T}
+```{r simulation_min_time_plot_iterative, fig.width = 7.2, fig.height= 3, fig.cap='Minimum number of samples required for 0.8 statistical power given different levels of (a) temporal variability ($\\sigma$), (b) temporal autocorrelation ($\\phi$), and (c) shift size. Iterative sampling was used with the default parameters are $\\sigma = 0.53$, $\\phi = 0.404$, and a shift size $=0.81$ to match the case study. The exact timing of the true changepoint varied for each simulation between time steps 30 and 70. Each vertical line indicates the respective parameter calculated from the case study time series. \\label{fig:simulation_min_time}',message=F,warning=F,echo=F,eval=F}
 
 par(mfrow=c(1,3))
 
@@ -342,6 +356,23 @@ cowplot::plot_grid(p1 + theme(plot.margin = unit(c(0.15, 0.1, 0.15, 0.15), "cm")
                    align = 'h', axis = 'tb')
 
 ```
+
+
+```{r parameter_sensitivity_plot_iterative,echo=F,message=F,warnings=F,fig.height=4,fig.cap='Iterative sampling statistical power (fraction of 100 simulations which detected a changepoint within five time points of the true changepoint) for different levels of standard deviation ($\\sigma$), lag-1 autocorrelation ($\\phi$), and shift size ($\\delta$). For each parameter combination, 20 samples were used. An increase in samples would increase the statistical power across this graph.\\label{fig:parameter_sensitivity_plot_iterative}'}
+output_theory_approach <- read.csv(file = 'Output/parameter_sensitivity_iterative.csv')
+
+require(ggplot2)
+require(viridis)
+ggplot(aes(x=phi_vec,y=sigma_vec,fill=power),data=output_theory_approach) + geom_tile() +
+  scale_fill_viridis(discrete=FALSE,begin = 0.1,end=0.9) +
+  facet_wrap(~shift_size_vec) + 
+  theme_classic(base_size = 14, base_family = "")+
+  theme(plot.subtitle = element_text(hjust = 0.5)) +
+  labs(fill='Power',subtitle = 'Shift size') +
+  xlab("Lag-1 autocorrelation (phi)") +
+  ylab("Standard deviation (sigma)")
+```
+
 
 
 
@@ -442,6 +473,8 @@ ggplot(vr_count, aes(Year, Biomass)) +
 
 
 ```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Distance to real changepoint in biomass per total number of samples analyzed, following (a) random sampling, (b) regular sampling, and (c) iterative sampling. Total number of samples was set between 5 and 30, out of the 74 initial time series.   \\label{fig:case_study_number_sample_biomass}'}
+
+require(stickylabeller)
 
 myoutput <- read.table(paste0(getwd(),"/Output/output_changepoint_varese_biomass.txt"))
 myoutput$method <- factor(myoutput$method, levels=c('Random', 'Regular', 'Iterative'))
