@@ -21,6 +21,18 @@ knitr::opts_knit$set(root.dir = dirname(getwd()))
 # Optional code below to include package citations
  knitr::write_bib(c('dplyr', 'rmarkdown'), file = 'packages.bib')
 # Use [@R-dplyr; @R-rmarkdown] in main text
+ 
+# Load packages
+if (!require("pacman",character.only = TRUE))
+  {
+    install.packages("pacman",dep=TRUE)
+    if(!require("pacman",character.only = TRUE)) stop("Package not found")
+  }
+
+# Keeping below source for github package. Ask Easton whether pacman works for github packages or not.
+#devtools::install_github("rensa/stickylabeller")
+  
+pacman::p_load(patchwork, stickylabeller, ggplot2, dplyr, wesanderson, reshape, cowplot, vegan, ecp)
 ```
 
 Title: Sampling requirements and approaches to detect ecosystem shifts
@@ -81,26 +93,12 @@ Environmental monitoring is a key component of understanding and managing ecosys
 \textbf{Keywords:} time series, changepoint, monitoring, optimal sampling, Cladocera, paleoecology
 
 
-```{r load_packages,echo=F,warning=F,message=F}
-if (!require("pacman",character.only = TRUE))
-  {
-    install.packages("pacman",dep=TRUE)
-    if(!require("pacman",character.only = TRUE)) stop("Package not found")
-  }
-
-# Keeping below source for github package. Ask Easton whether pacman works for github packages or not.
-#devtools::install_github("rensa/stickylabeller")
-  
-pacman::p_load(patchwork, stickylabeller, ggplot2, dplyr, wesanderson, reshape, cowplot, vegan, ecp)
-```
-
-
 
 # Introduction 
 
 Environmental monitoring is one of the core components to modern ecosystem research and management [@McDonald-Madden2010a; @White2019e; @Lindenmayer2020a]. Within an adaptive management framework, monitoring is needed for both learning about the system under study and assessing the effectiveness of management interventions [@Lovett2007]. Increasingly, long-term monitoring programs, like the Long Term Ecological Research (LTER) Network in the USA, are becoming available [@Maguran2010a]. However, environmental monitoring is still often expensive and time-consuming, especially when further processing is needed following sample collection [@Zhang2012]. Thus, for many fields there is a disparity between the amount of data that can be acquired and stored, and the ultimate number of samples that can be processed. Therefore, monitoring programs need to be designed in such a way to address the question of interest while using limited resources efficiently [@Legg2006a; @McDonald-Madden2010a; @Lengyel2018; @Lindenmayer2020a].
 
-Accounting for key considerations in the design of a monitoring program is necessary to detect long-term ecological change. The specifics of the monitoring program will determine the power with which a question of interest can be addressed. For example, @White2019e found that 72\% of vertebrate populations required at least 10 years of monitoring to detect significant changes in the population size over time. The specific number of years required depended on the species biology and the detection method used [@White2019e]. Other work has focused on the frequency of monitoring [@Wauchope2019a], the impact of allocating monitoring resources spatially versus temporally [@Rhodes2011a; @Weiser2019a], imperfect detection [@Morant2020], and the costs and benefits of increasing sampling breadth relying on citizen science [@Weiser2020a]. Lastly, both the ecological and economical costs of failing to detect a true trend (type II error) have to be weighed against the risks of false (type I error) detection [@Mapstone1995a]. Given limited budgets, monitoring programs need to be designed to be cost-effective [@Caughlan2001a; @Grantham2008b; @Bennett2016a]. 
+Monitoring programs characteristics must be tightly linked to the questions of interest. For example, @White2019e found that 72\% of vertebrate populations required at least 10 years of monitoring to detect significant changes in the population size over time. The specific number of years required depended on the species biology and the detection method used [@White2019e]. Other work has focused on the frequency of monitoring [@Wauchope2019a], the impact of allocating monitoring resources spatially versus temporally [@Rhodes2011a; @Weiser2019a], imperfect detection [@Morant2020], and the costs and benefits of increasing sampling breadth relying on citizen science [@Weiser2020a]. Lastly, both the ecological and economical costs of failing to detect a true trend (type II error) have to be weighed against the risks of false (type I error) detection [@Mapstone1995a]. Given limited budgets, monitoring programs need to be designed to be cost-effective [@Caughlan2001a; @Grantham2008b; @Bennett2016a]. 
 
 Because ecological systems are dynamic in both space and time, it is essential that sampling designs account for spatio-temporal dynamics [@Williams2018]. To estimate a particular parameter, e.g. population abundance, optimal spatial sampling strategies are based on spatially balanced sampling [@Kermorvant2019], while optimal temporal sampling strategies are more cost efficient with a targeted sampling, e.g., around the period of reproduction [@Jackson2008a]. In either case, sampling time and locations can be chosen in an iterative process to be cost-effective and reduce the uncertainty in the process [@Hooten2009]. With the ability to choose precisely when to sample, we can move beyond random, interval, or opportunistic sampling designs. This is particularly relevant in situations where a subset of samples already collected need to be analyzed. 
 
@@ -112,7 +110,7 @@ Building on ideas from dynamic survey design and optimal monitoring research, we
 
 # Sampling approaches and changepoint detection
 
-For both our simulations and case study, we investigate the effect of different sampling strategies on our ability to detect a changepoint. We begin by either creating simulated time series or using an actual paleoecological time series (Fig. \ref{fig:conceptual}). We then subsampled each time series [@White2020] to test the effect of three different sampling approaches along with varying the sample size (Fig. \ref{fig:conceptual}c-f). We compared the estimated changepoint from the subsampled time series to that of the full time series as a measure of the effectiveness.
+For both our simulations and case study, we investigate the effect of different sampling strategies on our ability to detect a changepoint. We begin by either creating simulated time series or using an actual paleoecological time series (Fig. \ref{fig:conceptual}). We then subsampled each time series to test the effect of three different sampling approaches along with varying the sample size (Fig. \ref{fig:conceptual}c-f). We compared the estimated changepoint from the subsampled time series to that of the full time series as a measure of the effectiveness.
 
 
 
@@ -154,11 +152,11 @@ In line with theory on optimal monitoring, we found that the probability of corr
 
 ## Case study background
 
-We examined the performance of our approach to detect changepoints in a paleosequence. Paleolimnology provides a reconstruction of past environments over long periods of time, under the premise that sedimentation was not perturbed (low mixing and disturbances). A sediment core is typically subsampled to narrow down periods of time to be compared, either at regular intervals (e.g., @Milan2015), or continuously (e.g., @Perga2015).
+We examined the performance of our approach to detect changepoints in a paleosequence. Paleolimnology allows to reconstruct past environments over long periods of time, under the premise that sedimentation was not perturbed (low mixing and disturbances). A sediment core is typically subsampled to narrow down periods of time to be compared, either at regular intervals (e.g., @Milan2015), or continuously (e.g., @Perga2015).
 
-We tested different sampling methods on a real community time series from Lake Varese (IT), with the objective to detect the main changepoint in Cladocera assemblage. Lake Varese is a small (14.8 km^2^), deep (z$_{max}$= 26m), monomictic lake, in the subalpine region of north-western Italy (238 m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed. Nutrient status was responsible for restructuration of the lake communities across trophic levels [@Crosta1999;@Bruel2018]. Air temperature is now driving changes in plankton communities [@Bruel2018].
+We tested different sampling methods on a real community time series from Lake Varese (IT), with the objective to detect the main changepoint in zooplankton Cladocera assemblage. Lake Varese is a small (14.8 km^2^), deep (z$_{max}$= 26m), monomictic lake, in the subalpine region of north-western Italy (238 m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed. Nutrient status was responsible for restructuration of the lake communities across trophic levels [@Crosta1999;@Bruel2018]. Air temperature is now driving changes in plankton communities [@Bruel2018].
 
-In a previous study, Cladoceran assemblage was reconstructed at a 2-3 years resolution, from a 74-cm sediment core covering the 1816(±26)—2010 time period [@Bruel2018]. Our objective was to evaluate whether the same changepoints could be identified using less samples. In this previous study, the variability in the community was summarized into independent axis using Detrended Component Analysis [@Hill1980]. Changepoints were then detected on the first component (46% of the total variability) in years 1926, 1946, and 1983. We defined these as the "true" changepoints given they came from an analysis of the complete data. The 1983 changepoint was the largest in magnitude, hence the changepoint we sought to find with our method. We also identified second and third changepoints (Fig. S3).
+In a previous study, Cladoceran assemblage was reconstructed continuously with a 1-cm subsampling resolution (2-3 years resolution), from a 74-cm sediment core covering the 1816(±26)—2010 time period [@Bruel2018]. Our objective was to evaluate whether the same changepoints could be identified using less samples. In this previous study, the variability in the community was summarized into independent axis using Detrended Component Analysis [@Hill1980]. Changepoints were then detected on the first component (46% of the total variability) in years 1926, 1946, and 1983. We defined these as the "true" changepoints given they came from an analysis of the complete data. The 1983 changepoint was the largest in magnitude, hence the changepoint we sought to find with our method. We also identified second and third changepoints (Fig. S3).
 
 In line with our simulation approach, we subsampled the full record (74 observations) using the three methods described earlier (random, regular, iterative). These subsamples were from the initial community dataset (Fig. \ref{fig:case_study_iterative_sampling}a). We reduced the dimensionality of the assemblage-level data to an ordination axis using the same method than in the original study, and detected the changepoint on the first component (univariate vector). In the case of the iterative method, a new sample was added and the ordination was run again (Fig. \ref{fig:case_study_iterative_sampling}d). For each of the three methods, we examined the error (difference between the true changepoint and the detected changepoint) when using different numbers of samples.
 
@@ -166,11 +164,11 @@ In line with our simulation approach, we subsampled the full record (74 observat
 
 ## Case study results
 
-We found that random sampling performed the worst, as changepoint analysis was left to chance (Fig. \ref{fig:case_study_number_sample}). Regular sampling provided good estimates from 8 samples, but detecting the true changepoint depended on the interval falling close to the true changepoint (i.e., left to chance). Iterative sampling performed the best, as no more than 9 samples were ever necessary to get the true changepoint (Fig. \ref{fig:case_study_number_sample}c). We show how iterative sampling slightly changes the scores on the first component but not the overall ordination, as more samples are added (Fig. \ref{fig:case_study_iterative_sampling}) 
+We found that random sampling performed the worst, as changepoint analysis was left to chance (Fig. \ref{fig:case_study_number_sample}). Regular sampling provided good estimates from 8 samples, but detecting the true changepoint depended on the interval falling close to the true changepoint (i.e., also left to chance). Iterative sampling performed the best, as no more than 9 samples were ever necessary to get the true changepoint (Fig. \ref{fig:case_study_number_sample}c). We show how iterative sampling slightly changes the scores on the first component but not the overall ordination, as more samples are added (Fig. \ref{fig:case_study_iterative_sampling}) 
 
-We also tested how the three methods performed at detecting other changepoints of lower magnitude (as three changepoints were detected in the initial study, @Bruel2018). Iterative sampling still performed best, especially if an higher number of initial samples was chosen (Fig. S3).
+We also tested how the three methods performed at detecting other changepoints of lower magnitude (as three changepoints were detected in the initial study, @Bruel2018). Iterative sampling still performed best, especially if an higher number of initial samples (7) was chosen (Fig. S3).
 
-As another application of our approach, we examined the same sediment core data, but examined total abundance as opposed to community composition (Fig. S4). We tested the three subsampling methods, and it took 11 samples to find the "true" changepoint  (Fig. S5). The initial 5 subsamples analyzed were the same than the subsamples analyzed to answer the question of the change in community  (Fig. \ref{fig:case_study_number_sample}c). <!--However, depending on the metric of interest, the subsampling will target different subsamples to add. In other words, the number of subsamples analyzed can be reduced, especially in cases where the question is well tailored from the beginning.-->
+As another application of our approach, we examined the same sediment core data, but examined total abundance as opposed to community composition (Fig. S4). We tested the three subsampling methods, and it took 11 samples to find the "true" changepoint  (Fig. S5). The initial 5 subsamples analyzed were the same than the subsamples analyzed to answer the question of the change in community  (Fig. \ref{fig:case_study_number_sample}c). The implication is that a very limited number of processed sample can rapidly and efficiently be used to narrow down different questions on a same dataset. <!--However, depending on the metric of interest, the subsampling will target different subsamples to add. In other words, the number of subsamples analyzed can be reduced, especially in cases where the question is well tailored from the beginning.-->
 
 <!--This could probably be moved to the discussion: The initial number of samples should be chosen depending on the objective of the study. If investigators want to find the biggest transition only, then a low number might be enough (include here results from theoretical results?). If investigators suspect or want to test for several changepoints, we recommend analyzing initially about 10% of the length of the time series to have a good initial ranking.-->
 
@@ -216,7 +214,7 @@ Analyzing a subsample of a time series as opposed to the whole time series will 
 
 # Author contributions
 
-ERW and RB conceived the ideas and designed methodology; RB collected the data; ERW designed the simulations; ERW and RB analysed the data; Both authors contributed critically to the drafts and gave final approval for publication
+ERW and RB conceived the ideas and designed methodology; RB collected the data; ERW designed the simulations; RB wrote the R code that simulates the three sampling approaches; ERW and RB analysed the data; Both authors contributed critically to the drafts and gave final approval for publication
 
 # Data availability 
 
