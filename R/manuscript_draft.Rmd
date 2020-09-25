@@ -626,7 +626,8 @@ vr_out_order$count <- abs(vr_out_order$count-max(vr_out_order$count)-1)
 
 
 mypal <- wes_palette("GrandBudapest2", max(vr_out_order$count),type = "continuous")
- 
+#mypal <-  c("#4C4F54", "#D57A5D", "#AE5654", "#D18437", "#9EC6DD")
+
 # Plot with all data
  p_init <- ggplot(vrall$matrix, aes(age, x)) + geom_point(alpha = .3) + geom_line(alpha = .3) +
   theme_bw()  +
