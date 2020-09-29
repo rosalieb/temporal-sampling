@@ -110,6 +110,7 @@ sample_iterative <- function(x, n, n2 = 5, c=1, messages = T, input_vector = T, 
   }
   
   changepoints <- e.divisive(x2, min.size = 2)
+  if(length(changepoints$p.values)>1) changepoints$p.values <- changepoints$p.values[-length(changepoints$p.values)]
   
   # Print the main changepoint
   if(messages) print(changepoints$order.found[3])

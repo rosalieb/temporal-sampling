@@ -49,6 +49,7 @@ sample_regular <- function(x, n, messages = T, input_vector = T, xcol = NA, DCA_
   x2 <- matrix(x2[,2])
   
   changepoints <- e.divisive(x2, min.size = 2)
+  if(length(changepoints$p.values)>1) changepoints$p.values <- changepoints$p.values[-length(changepoints$p.values)]
   
   # Print the main changepoint
   if(messages) print(changepoints$order.found[3])
