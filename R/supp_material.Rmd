@@ -81,6 +81,8 @@ source('R/updated_param_sensitivity.R')
 source('R/calc_min_time2.R')
 require(tidyverse)
 require(stickylabeller)
+require(ggplot2)
+require(viridis)
 
 # Sigma results
 sigma_vec = seq(0.01,0.4,0.025)
@@ -361,8 +363,6 @@ cowplot::plot_grid(p1 + theme(plot.margin = unit(c(0.15, 0.1, 0.15, 0.15), "cm")
 ```{r parameter_sensitivity_plot_iterative,echo=F,message=F,warnings=F,fig.height=4,fig.cap='Iterative sampling statistical power (fraction of 100 simulations which detected a changepoint within five time points of the true changepoint) for different levels of standard deviation ($\\sigma$), lag-1 autocorrelation ($\\phi$), and shift size ($\\delta$). For each parameter combination, 20 samples were used. An increase in samples would increase the statistical power across this graph.\\label{fig:parameter_sensitivity_plot_iterative}'}
 output_theory_approach <- read.csv(file = 'Output/parameter_sensitivity_iterative.csv')
 
-require(ggplot2)
-require(viridis)
 ggplot(aes(x=phi_vec,y=sigma_vec,fill=power),data=output_theory_approach) + geom_tile() +
   scale_fill_viridis(discrete=FALSE,begin = 0.1,end=0.9) +
   facet_wrap(~shift_size_vec) + 
@@ -501,9 +501,140 @@ p1
 ```
 
 
+# Case study: Testing other types of models
+
+Throughout the main text and supplementary material, we focus on detecting changepoints. However, other types of models and criteria may be more appropriate depending on the question. This is especially true for situations where changepoints are not expected apriori. To address this, we used our random and regular sampling approaches with two additional models: linear models and generalized additive models. For simple linear regression, we measured the percent difference in the estimated slope between the subsampled data and the full time series (Fig. \ref{fig:lineartrends}). This is similar to past work [@White2019e; @White2020] on detecting population trends. 
+
+```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Percent difference for the estimated slope from linear regression for the abundance time series using (a) random and (b) regular sampling. Iterative sampling could be used for linear trends, but would require additional decisions on how to add samples. \\label{fig:lineartrends}'}
+
+vr <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt"))
+vr_count <- data.frame(Year=vr[,1], Biomass=rowSums(vr[,-1]))
+cpvar_count <- sample_regular(vr_count[,2], nrow(vr_count), input_vector = T, messages = F)
+
+#plot(vr_count)
+#abline(lm(vr_count$Biomass~vr_count$Year))
+true_slope <- as.numeric(coef(lm(vr_count$Biomass~vr_count$Year))[2])
+
+regular_linear <- function(x,y,num_samples){
+  true_slope <- as.numeric(coef(lm(y~x))[2])
+  
+  subset_index <- c(seq(from = 1, to = length(x),length.out =num_samples),length(x))
+  subset_x <- x[subset_index]
+  subset_y <- y[subset_index]
+  
+  subset_slope <- as.numeric(coef(lm(subset_y~subset_x))[2])
+
+ return(abs(true_slope - subset_slope)/true_slope)  
+}
+
+spacing_vec <- seq(3,70,by=3)
+distance <- vector(mode='numeric',length = length(spacing_vec))
+for (i in 1:length(spacing_vec)){
+  distance[i] <- regular_linear(x = vr_count$Year,y=vr_count$Biomass,num_samples =spacing_vec[i])
+  
+}
+par(mfrow=c(1,2),mar=c(0.5,0.1,1.5,0.1),oma=c(4,4,0.5,0.5))
+plot(spacing_vec,distance,las=1,ylim=c(0,1.2),col='darkgrey',pch=16)
+abline(h=0,col='darkgrey',lwd=1.5)
+mtext('a. Random sampling - linear model',side = 3,line = 0,adj = 0)
 
 
 
+# Random sampling 
+
+random_linear <- function(x,y,num_samples){
+  true_slope <- as.numeric(coef(lm(y~x))[2])
+  
+  subset_index <- sort(c(1,sample(2:(length(x)-1),size = num_samples),length(x)))
+  subset_x <- x[subset_index]
+  subset_y <- y[subset_index]
+  
+  subset_slope <- as.numeric(coef(lm(subset_y~subset_x))[2])
+  
+  return(abs(true_slope - subset_slope)/true_slope)  
+}
+
+#spacing_vec <- 3:60
+distance <- vector(mode='numeric',length = length(spacing_vec))
+for (i in 1:length(spacing_vec)){
+  distance[i] <- random_linear(x = vr_count$Year,y=vr_count$Biomass,num_samples =spacing_vec[i])
+  
+}
+plot(spacing_vec,distance,las=1,ylim=c(0,1.2),yaxt='n',col='darkgrey',pch=16)
+abline(h=0,col='darkgrey',lwd=1.5)
+mtext('b. Regular sampling - linear model',side = 3,line = 0,adj = 0)
+mtext('Percent difference',side = 2,line = 2.5,outer = T,font = 2)
+mtext('Total number of samples analyzed',side = 1,line = 2.5,outer = T,font = 2)
+
+
+```
+
+Similarly, for a generalized additive model, we examined the shape of the estimated curve for subsets of data compared to the full time series (Fig. \ref{fig:gamtrends}). In line with our other results, the regular sampling performed better than random sampling upon visual inspection. Both sampling approaches also visually approach the full data set with fewer samples compared to the linear models.
+
+```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Percent difference for the estimated slope from linear regression for the abundance time series using (a) random and (b) regular sampling. Iterative sampling could be used for linear trends, but would require additional decisions on how to add samples. \\label{fig:gamtrends}'}
+
+vr <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt"))
+vr_count <- data.frame(Year=vr[,1], Biomass=rowSums(vr[,-1]))
+cpvar_count <- sample_regular(vr_count[,2], nrow(vr_count), input_vector = T, messages = F)
+
+smoothing_parameter=5
+require(mgcv)
+
+par(mfrow=c(2,4),mar=c(0.5,0.1,1.5,0.1),oma=c(4,4,0.5,0.5))
+
+subset_index <- sort(c(1,sample(2:(length(vr_count$Year)-1),size = 10),length(vr_count$Year)))
+vr_count_subset <- vr_count[subset_index,]
+gam1_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
+plot(gam1_rand,ylim=c(-50000,50000),xaxt='n')
+mtext('a. Random (n=10)',side = 3,line = 0,adj = 0)
+
+subset_index <- sort(c(1,sample(2:(length(vr_count$Year)-1),size = 20),length(vr_count$Year)))
+vr_count_subset <- vr_count[subset_index,]
+gam2_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
+plot(gam2_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n')
+mtext('b. Random (n=20)',side = 3,line = 0,adj = 0)
+
+subset_index <- sort(c(1,sample(2:(length(vr_count$Year)-1),size = 30),length(vr_count$Year)))
+vr_count_subset <- vr_count[subset_index,]
+gam3_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
+plot(gam3_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n')
+mtext('c. Random (n=30)',side = 3,line = 0,adj = 0)
+
+
+gam4_rand <- gam(vr_count$Biomass ~ s(vr_count$Year,k=smoothing_parameter),family=gaussian)
+plot(gam4_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n')
+mtext('d. Random (n=74)',side = 3,line = 0,adj = 0)
+
+
+# Regular GAMs
+
+subset_index <- c(seq(from = 1, to = length(vr_count$Year),length.out =10),length(vr_count$Year))
+vr_count_subset <- vr_count[subset_index,]
+gam1_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
+plot(gam1_rand,ylim=c(-50000,50000))
+mtext('e. Regular (n=10)',side = 3,line = 0,adj = 0)
+
+subset_index <- c(seq(from = 1, to = length(vr_count$Year),length.out =20),length(vr_count$Year))
+vr_count_subset <- vr_count[subset_index,]
+gam2_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
+plot(gam2_rand,ylim=c(-50000,50000),yaxt='n')
+mtext('f. Regular (n=20)',side = 3,line = 0,adj = 0)
+
+subset_index <- c(seq(from = 1, to = length(vr_count$Year),length.out =30),length(vr_count$Year))
+vr_count_subset <- vr_count[subset_index,]
+gam3_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
+plot(gam3_rand,ylim=c(-50000,50000),yaxt='n')
+mtext('g. Regular (n=30)',side = 3,line = 0,adj = 0)
+
+
+gam4_rand <- gam(vr_count$Biomass ~ s(vr_count$Year,k=smoothing_parameter),family=gaussian)
+plot(gam4_rand,ylim=c(-50000,50000),yaxt='n')
+mtext('h. Regular (n=40)',side = 3,line = 0,adj = 0)
+
+mtext('Standardized abundance',side = 2,line = 2.5,outer = T,font = 2)
+mtext('Time (year)',side = 1,line = 2.5,outer = T,font = 2)
+
+```
 
 \clearpage
 
