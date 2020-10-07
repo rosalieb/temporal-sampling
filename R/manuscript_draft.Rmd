@@ -32,7 +32,7 @@ if (!require("pacman",character.only = TRUE))
 # Keeping below source for github package. Ask Easton whether pacman works for github packages or not.
 #devtools::install_github("rensa/stickylabeller")
   
-pacman::p_load(patchwork, stickylabeller, ggplot2, dplyr, wesanderson, reshape, cowplot, vegan, ecp)
+pacman::p_load(patchwork, stickylabeller, ggplot2, dplyr, wesanderson, reshape, cowplot, vegan, ecp, ggthemes)
 ```
 
 Title: Sampling requirements and approaches to detect ecosystem shifts
@@ -156,7 +156,7 @@ We examined the performance of our approach to detect changepoints in a paleoseq
 
 We tested different sampling methods on a real community time series from Lake Varese (IT), with the objective to detect the main changepoint in zooplankton Cladocera assemblage. Lake Varese is a small (14.8 km^2^), deep (z$_{max}$= 26m), monomictic lake, in the subalpine region of north-western Italy (238 m asl). It underwent hyper-eutrophication over the 20^th^ century due to increase in nutrient loads from the watershed. Nutrient status was responsible for restructuration of the lake communities across trophic levels [@Crosta1999;@Bruel2018]. Air temperature is now driving changes in plankton communities [@Bruel2018].
 
-In a previous study, Cladoceran assemblage was reconstructed continuously with a 1-cm subsampling resolution (2-3 years resolution), from a 74-cm sediment core covering the 1816(±26)—2010 time period [@Bruel2018]. Our objective was to evaluate whether the same changepoints could be identified using fewer samples.\linelabel{text:fewer} In this previous study, the variability in the community was summarized into independent axis using Detrended Component Analysis [@Hill1980]. Changepoints were then detected on the first component (46% of the total variability) in years 1926, 1946, and 1983. We defined these as the "true" changepoints given they came from an analysis of the complete data. The 1983 changepoint was the largest in magnitude, hence the changepoint we sought to find with our method. We also identified second and third changepoints (Fig. S3).
+In a previous study, Cladoceran assemblage was reconstructed continuously with a 1-cm subsampling resolution (2-3 years resolution), from a 74-cm sediment core covering the 1816(±26)—2010 time period [@Bruel2018]. Our objective was to evaluate whether the same changepoints could be identified using fewer samples.\linelabel{text:fewer} In this previous study, the variability in the community was summarized into independent axis using Detrended Component Analysis [@Hill1980]. Changepoints were then detected on the first component (46% of the total variability) in years 1926, 1946, and 1983. We defined these as the "true" changepoints given they came from an analysis of the complete sequence The 1983 changepoint was the largest in magnitude, hence the changepoint we sought to find with our method. We also identified second and third changepoints (Fig. S3).
 
 In line with our simulation approach, we subsampled the full record (74 observations) using the three methods described earlier (random, regular, iterative). These subsamples were from the initial community dataset (Fig. \ref{fig:case_study_iterative_sampling}a). We reduced the dimensionality of the assemblage-level data to an ordination axis using the same method in the original study, and detected the changepoint on the first component (univariate vector). \linelabel{text:iterative} \textcolor{red}{In the case of the iterative method, a new sample was added in the temporal region closest to the estimate for the changepoint until a more precise estimate was obtained} (Fig. \ref{fig:case_study_iterative_sampling}d). For each of the three methods, we examined the error (difference between the true changepoint and the detected changepoint) when using different numbers of samples.
 
@@ -168,7 +168,7 @@ We found that random sampling performed the worst, as changepoint analysis was l
 
 We also tested how the three methods performed at detecting other changepoints of lower magnitude (as three changepoints were detected in the initial study, @Bruel2018). Iterative sampling still performed best, especially if an higher number of initial samples (7) was chosen (Fig. S3).
 
-\linelabel{text:detection2} \textcolor{red}{To show the generality of our approach}, we examined the same sediment core data, but examined total abundance as opposed to community composition (Fig. S4). We tested the three subsampling methods, and it took 11 samples to find the "true" changepoint  (Fig. S5). The initial 5 subsamples analyzed were the same than the subsamples analyzed to answer the question of the change in community  (Fig. \ref{fig:case_study_number_sample}c). The implication is that a very limited number of processed sample can rapidly and efficiently be used to narrow down different questions on a same dataset. \textcolor{red}{In addition, we examined the same abundance time series, but with linear and generalized additive models (GAMs)}. In line with findings from} @White2019e, \textcolor{red}{we found that the flexibility of GAMs allow the use of less samples (Figs. S6, S7).}
+\linelabel{text:detection2} \textcolor{red}{To show the generality of our approach}, we examined the same sediment core data, but examined total abundance as opposed to community composition (Fig. S4). We tested the three subsampling methods, and it took 11 samples to find the "true" changepoint  (Fig. S5). The initial 5 subsamples analyzed were the same than the subsamples analyzed to answer the question of the change in community  (Fig. \ref{fig:case_study_number_sample}c). The implication is that a very limited number of processed sample can rapidly and efficiently be used to narrow down different questions on a same dataset. \textcolor{red}{In addition, we examined the same abundance time series, but with linear and generalized additive models (GAMs)}. In line with findings from @White2019e, \textcolor{red}{we found that the flexibility of GAMs allow the use of less samples (Figs. S6, S7).}
 
 
 <!--However, depending on the metric of interest, the subsampling will target different subsamples to add. In other words, the number of subsamples analyzed can be reduced, especially in cases where the question is well tailored from the beginning.-->
@@ -203,7 +203,7 @@ Our approach goes beyond just paleoecological analyses. Running simulations or u
 
 
 
-Our approach is applicable to a wide range of systems and questions, but it does have limitations. When less resources are needed for sample analysis, as opposed to collection, investigators will likely be able to process every sample, and analyzing all samples to obtain a whole picture may be preferred. We note that if resources need to be saved by collecting less samples in the first place, then regular sampling performs better than random sampling (Figs. \ref{fig:simulation_approaches_plot}, S1, S2). \linelabel{red}{text:limits} \textcolor{red}{Our specific iterative approach for detecting changepoints is also not appropriate for systems where changepoints are not expected. Instead, more flexible models (e.g., GAMs) might be more appropriate (Fig. S7).} Another example where our method is less useful is when addressing questions that require a continuous time series, or at least a regular sampling interval. For example, continuous, high-resolution subsampling of a time-series is generally required to detect critical slowing-down or early warning of shifts [@Frossard2015; @Doncaster2016].
+Our approach is applicable to a wide range of systems and questions, but it does have limitations. When less resources are needed for sample analysis, as opposed to collection, investigators will likely be able to process every sample, and analyzing all samples to obtain a whole picture may be preferred. We note that if resources need to be saved by collecting less samples in the first place, then regular sampling performs better than random sampling (Figs. \ref{fig:simulation_approaches_plot}, S1, S2). \linelabel{text:limits} \textcolor{red}{Our specific iterative approach for detecting changepoints is also not appropriate for systems where changepoints are not expected. Instead, more flexible models (e.g., GAMs) might be more appropriate (Fig. S7).} Another example where our method is less useful is when addressing questions that require a continuous time series, or at least a regular sampling interval. For example, continuous, high-resolution subsampling of a time-series is generally required to detect critical slowing-down or early warning of shifts [@Frossard2015; @Doncaster2016].
 
 However, recent work suggest that combining indicators (in the specific study, trait dynamics and abundance-based early warning signals) allows forecasting population collapses even with at lower resolution and time-series length [@Arkilanian2020]. Critical slowing down does not necessarily result in a shift, and a shift can occur without critical slowing down [@Spears2017]. Signs of critical slowing downs are important to understand and recognize because they provide potential early warnings [@Doncaster2016], but in terms of management, knowing the timing of a shift can have larger implications in addressing the underlying driver. Thus, selecting a set number of samples or specific approach may also limit what future questions can be asked. 
 
@@ -217,7 +217,7 @@ Analyzing a subsample of a time series as opposed to the whole time series will 
 
 # Author contributions
 
-ERW and RB conceived the ideas and designed methodology; RB collected the data; ERW designed the simulations; RB wrote the R code that simulates the three sampling approaches; ERW and RB analysed the data; Both authors contributed critically to the drafts and gave final approval for publication
+RB and ERW conceived the ideas and designed methodology; RB collected the data; ERW designed the simulations; RB wrote the R code that simulates the three sampling approaches, and applied the method to the case study data; ERW and RB analysed the data; Both authors contributed critically to the drafts and gave final approval for publication.
 
 # Data availability 
 
@@ -628,8 +628,13 @@ vr_out_order$count <- abs(vr_out_order$count-max(vr_out_order$count)-1)
 
 
 
+mypal = colorblind_pal()(8)
+mypal = mypal[c(7,2,3,6,8)]
 mypal <- wes_palette("GrandBudapest2", max(vr_out_order$count),type = "continuous")
-#mypal <-  c("#4C4F54", "#D57A5D", "#AE5654", "#D18437", "#9EC6DD")
+mypal <- wes_palette("Zissou1", max(vr_out_order$count)+5,type = "continuous")
+mypal[4] <- "#90b581"
+mypal <- mypal[c(1,3,4,7,9)]
+
 
 # Plot with all data
  p_init <- ggplot(vrall$matrix, aes(age, x)) + geom_point(alpha = .3) + geom_line(alpha = .3) +

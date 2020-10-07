@@ -503,9 +503,9 @@ p1
 
 # Case study: Testing other types of models
 
-Throughout the main text and supplementary material, we focus on detecting changepoints. However, other types of models and criteria may be more appropriate depending on the question. This is especially true for situations where changepoints are not expected apriori. To address this, we used our random and regular sampling approaches with two additional models: linear models and generalized additive models. For simple linear regression, we measured the percent difference in the estimated slope between the subsampled data and the full time series (Fig. \ref{fig:lineartrends}). This is similar to past work [@White2019e; @White2020] on detecting population trends. 
+Throughout the main text and supplementary material, we focus on detecting changepoints. However, other types of models and criteria may be more appropriate depending on the question. This is especially true for situations where changepoints are not expected _a priori_. To address this, we used our random and regular sampling approaches with two additional models: linear models and generalized additive models. For simple linear regression, we measured the percent difference in the estimated slope between the subsampled data and the full time series (Fig. \ref{fig:lineartrends}). This is similar to past work [@White2019e; @White2020] on detecting population trends. 
 
-```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Percent difference for the estimated slope from linear regression for the abundance time series using (a) random and (b) regular sampling. Iterative sampling could be used for linear trends, but would require additional decisions on how to add samples. \\label{fig:lineartrends}'}
+```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Percent difference for the estimated slope from linear regression for the abundance time series using (a-d) random and (e-h) regular sampling. Iterative sampling could be used for linear trends, but would require additional decisions on how to add samples. \\label{fig:lineartrends}'}
 
 vr <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt"))
 vr_count <- data.frame(Year=vr[,1], Biomass=rowSums(vr[,-1]))
@@ -569,9 +569,9 @@ mtext('Total number of samples analyzed',side = 1,line = 2.5,outer = T,font = 2)
 
 ```
 
-Similarly, for a generalized additive model, we examined the shape of the estimated curve for subsets of data compared to the full time series (Fig. \ref{fig:gamtrends}). In line with our other results, the regular sampling performed better than random sampling upon visual inspection. Both sampling approaches also visually approach the full data set with fewer samples compared to the linear models.
+Similarly, for a generalized additive model, we examined the shape of the estimated curve for subsets of data compared to the full time series (Fig. \ref{fig:gamtrends} \textcolor{red}{the caption is not the correct one, I edited it, but check you agree with it!}). In line with our other results, the regular sampling performed better than random sampling upon visual inspection. Both sampling approaches also visually approach the full data set with fewer samples compared to the linear models \textcolor{red}{(I do not understand this sentence)}. Iterative sampling requires only 8 samples to find the changepoint, but the a larger initial number is also necessary to capture the whole dynamic. 
 
-```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 3,fig.cap='Percent difference for the estimated slope from linear regression for the abundance time series using (a) random and (b) regular sampling. Iterative sampling could be used for linear trends, but would require additional decisions on how to add samples. \\label{fig:gamtrends}'}
+```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 4.4,fig.cap='The fitted smooth functions for Year for different subset of the zooplankton abundance dataset for Lake Varese (IT). Subsamples using (a-d) random and (e-h) regular sampling. (i-j) shows the influence of the initial number of sample  (n2) when using the iterative method. For low initial numbers, the dynamic of the abundance is not caught. Choosing a larger initial number (n2) allows to capture the dynamic and find the real changepoint with a limited total number of samples (n). \\label{fig:gamtrends}'}
 
 vr <- read.delim(paste0(getpath4data(),"VAR10-10-clado.txt"))
 vr_count <- data.frame(Year=vr[,1], Biomass=rowSums(vr[,-1]))
@@ -580,29 +580,35 @@ cpvar_count <- sample_regular(vr_count[,2], nrow(vr_count), input_vector = T, me
 smoothing_parameter=5
 require(mgcv)
 
-par(mfrow=c(2,4),mar=c(0.5,0.1,1.5,0.1),oma=c(4,4,0.5,0.5))
+par(mfrow=c(3,4),mar=c(0.5,0.1,1.5,0.1),oma=c(4,4,0.5,0.5))
+
+# Random GAMs
 
 subset_index <- sort(c(1,sample(2:(length(vr_count$Year)-1),size = 10),length(vr_count$Year)))
 vr_count_subset <- vr_count[subset_index,]
 gam1_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
-plot(gam1_rand,ylim=c(-50000,50000),xaxt='n')
+plot.gam(gam1_rand,ylim=c(-50000,50000),xaxt='n', shade = T)
+axis(1, at=vr_count_subset$Year, NA, tcl=0.3, lwd=.5)
 mtext('a. Random (n=10)',side = 3,line = 0,adj = 0)
 
 subset_index <- sort(c(1,sample(2:(length(vr_count$Year)-1),size = 20),length(vr_count$Year)))
 vr_count_subset <- vr_count[subset_index,]
 gam2_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
-plot(gam2_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n')
+plot.gam(gam2_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n', shade = T)
+axis(1, at=vr_count_subset$Year, NA, tcl=0.3, lwd=.5)
 mtext('b. Random (n=20)',side = 3,line = 0,adj = 0)
 
 subset_index <- sort(c(1,sample(2:(length(vr_count$Year)-1),size = 30),length(vr_count$Year)))
 vr_count_subset <- vr_count[subset_index,]
-gam3_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
-plot(gam3_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n')
+gam3_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian)
+plot.gam(gam3_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n', shade = T)
+axis(1, at=vr_count_subset$Year, NA, tcl=0.3, lwd=.5)
 mtext('c. Random (n=30)',side = 3,line = 0,adj = 0)
 
 
 gam4_rand <- gam(vr_count$Biomass ~ s(vr_count$Year,k=smoothing_parameter),family=gaussian)
-plot(gam4_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n')
+plot.gam(gam4_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n', shade = T)
+axis(1, at=vr_count$Year, NA, tcl=0.3, lwd=.5)
 mtext('d. Random (n=74)',side = 3,line = 0,adj = 0)
 
 
@@ -611,30 +617,278 @@ mtext('d. Random (n=74)',side = 3,line = 0,adj = 0)
 subset_index <- c(seq(from = 1, to = length(vr_count$Year),length.out =10),length(vr_count$Year))
 vr_count_subset <- vr_count[subset_index,]
 gam1_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
-plot(gam1_rand,ylim=c(-50000,50000))
+plot.gam(gam1_rand,ylim=c(-50000,50000),xaxt='n', shade = T)
+axis(1, at=vr_count_subset$Year, NA, tcl=0.3, lwd=.5)
 mtext('e. Regular (n=10)',side = 3,line = 0,adj = 0)
 
 subset_index <- c(seq(from = 1, to = length(vr_count$Year),length.out =20),length(vr_count$Year))
 vr_count_subset <- vr_count[subset_index,]
 gam2_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
-plot(gam2_rand,ylim=c(-50000,50000),yaxt='n')
+plot.gam(gam2_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n', shade = T)
+axis(1, at=vr_count_subset$Year, NA, tcl=0.3, lwd=.5)
 mtext('f. Regular (n=20)',side = 3,line = 0,adj = 0)
 
 subset_index <- c(seq(from = 1, to = length(vr_count$Year),length.out =30),length(vr_count$Year))
 vr_count_subset <- vr_count[subset_index,]
 gam3_rand <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
-plot(gam3_rand,ylim=c(-50000,50000),yaxt='n')
+plot.gam(gam3_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n', shade = T)
+axis(1, at=vr_count_subset$Year, NA, tcl=0.3, lwd=.5)
 mtext('g. Regular (n=30)',side = 3,line = 0,adj = 0)
 
 
 gam4_rand <- gam(vr_count$Biomass ~ s(vr_count$Year,k=smoothing_parameter),family=gaussian)
-plot(gam4_rand,ylim=c(-50000,50000),yaxt='n')
-mtext('h. Regular (n=40)',side = 3,line = 0,adj = 0)
+plot.gam(gam4_rand,ylim=c(-50000,50000),xaxt='n',yaxt='n', shade = T)
+axis(1, at=vr_count$Year, NA, tcl=0.3, lwd=.5)
+mtext('h. Regular (n=74)',side = 3,line = 0,adj = 0)
+
+# Iterative GAMs
+
+subset_index <- sample_iterative(vr, xcol = 1, n = 10, input_vector = F, DCA_axis = 1)
+subset_index <- subset_index$matrix$index
+vr_count_subset <- vr_count[subset_index,]
+gam1_it <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
+plot.gam(gam1_it,ylim=c(-50000,50000), shade = T)
+mtext('i. Iterative (n=8, n2=5)',side = 3,line = 0,adj = 0)
+
+subset_index <- sample_iterative(vr, xcol = 1, n = 20, n2 = 10, input_vector = F, DCA_axis = 1)
+subset_index <- subset_index$matrix$index
+vr_count_subset <- vr_count[subset_index,]
+gam2_it <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
+plot.gam(gam2_it,ylim=c(-50000,50000),yaxt='n', shade = T)
+mtext('j. Iterative (n=13, n2=10)',side = 3,line = 0,adj = 0)
+
+subset_index <- sample_iterative(vr, xcol = 1, n = 50, n2 = 30, input_vector = F, DCA_axis = 1)
+subset_index <- subset_index$matrix$index
+vr_count_subset <- vr_count[subset_index,]
+gam3_it <- gam(vr_count_subset$Biomass ~ s(vr_count_subset$Year,k=smoothing_parameter),family=gaussian,)
+plot.gam(gam3_it,ylim=c(-50000,50000),yaxt='n', shade = T)
+mtext('h. Iterative (n=32, n2=30)',side = 3,line = 0,adj = 0)
+
+gam4_it <- gam(vr_count$Biomass ~ s(vr_count$Year,k=smoothing_parameter),family=gaussian)
+plot.gam(gam4_it,ylim=c(-50000,50000), shade = T)
+mtext('k. Iterative (n2=74)',side = 3,line = 0,adj = 0)
+
 
 mtext('Standardized abundance',side = 2,line = 2.5,outer = T,font = 2)
 mtext('Time (year)',side = 1,line = 2.5,outer = T,font = 2)
 
 ```
+
+# Word of caution
+
+The limits of our three sub-sampling functions are tied to the limits of the _e.divise()_ function. In a situation where the change is a linear change instead of a sudden changepoint, the function _e.divise()_ will find a changepoint in the middle of the linear decline (Fig. \ref{fig:caution1}). In such situation, iterative sampling still performs the best.
+
+```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 6, fig.height= 8,fig.cap='Examples of two time-series where shift lasted over (a) 5 and (b) 10 observations. Building off the example time-series in (b), we tested the three sampling method in (c-d). (c-d) are same as in Fig. 1 in the main manuscript. \\label{fig:caution1}'}
+
+mypal <- wes_palette("Chevalier1")
+mypal <- wes_palette("Zissou1", max(vr_out_order$count)+5, type = "continuous")
+mypal[4] <- "#90b581"
+mypal <- mypal[c(1,3,4,7,9)]
+
+ar1 <- build_time_series()
+mydata <- (ar1 - min(ar1))/(max(ar1) - min(ar1))
+
+cex_titles <- .8
+
+# Require an output from any of the 3 functions sampling_regular, sampling_random, sampling_iterative
+pol_break <- function(cpt, col=1, y1=-.2, y2=1.2) {
+  if(col==1) mycol=mypal[1]
+  if(col==2) mycol=mypal[2]
+  x1   <- cpt$changepoint
+  x2   <- cpt$matrix$index[which(cpt$matrix$index==cpt$changepoint)-1]
+  pol_x <- c(x1, x2, x2, x1)
+  pol_y <- c(y1, y1, y2, y2)
+  polygon(pol_x, pol_y, col= adjustcolor(mycol, alpha.f = .3), density = NULL, border = NA)
+}
+
+layout(matrix(c(1,2,0,
+         3,4,5,
+         0,0,6,
+         0,0,7), ncol=3, byrow = T))
+par(mar=c(1,2,6,2))
+
+
+# plot 1: shift_duration = 5 ####
+ar1 <- build_time_series(shift_duration = 5, shift_time = 62)
+ar1 <- (ar1 - min(ar1))/(max(ar1) - min(ar1))
+mydata <- ar1
+
+
+plot(mydata, col="black", type="l", lwd=1.5, axes=F, xlab="",ylab="")
+axis(1, lwd=2, at = c(-10,120))
+axis(2, lwd=2, at = c(-1,2))
+cp <- sample_regular(mydata, n=length(mydata), messages = F)
+pol_break(cpt = cp)
+lines(mydata, col="black", lwd=1.5)
+text(cp$changepoint, .8, labels = "'real' \nchange point",pos = 4, col=mypal[1])
+mtext("a. Example time-series with a shift \nlasting over 5 observations", side = 3, line = 2.5, adj = 0, font=1, cex=cex_titles)
+
+# plot2: shift_duration = 10  ####
+ar1 <- build_time_series(shift_duration = 10, shift_time = 35)
+ar1 <- (ar1 - min(ar1))/(max(ar1) - min(ar1))
+mydata <- ar1
+
+plot(mydata, col="black", type="l", lwd=1.5, axes=F, xlab="",ylab="")
+axis(1, lwd=2, at = c(-10,120))
+axis(2, lwd=2, at = c(-1,2))
+cp <- sample_regular(mydata, n=length(mydata), messages = F)
+pol_break(cpt = cp)
+lines(mydata, col="black", lwd=1.5)
+text(cp$changepoint, .8, labels = "'real' \nchange point",pos = 4, col=mypal[1])
+mtext("a. Example time-series with a shift \nlasting over 10 observations", side = 3, line = 2.5, adj = 0, font=1, cex=cex_titles)
+
+
+# Plot 3 -- random sampling ####
+plot(mydata, col=adjustcolor("grey", alpha.f = .4), type="l", lwd=1.5, axes=F, xlab="",ylab="")
+axis(1, lwd=2, at = c(-10,120))
+axis(2, lwd=2, at = c(-1,2))
+cp_random <- sample_random(mydata, n=15, messages = F)
+points(cp_random$matrix$index, cp_random$matrix$x, pch=4, lwd=2)
+pol_break(cpt = cp, col=1)
+pol_break(cpt = cp_random, col=2)
+lines(mydata, col="black", lwd=1.5)
+text(100,0.95,labels = paste0("n = ",cp_random$final_n), pos = 2)
+mtext("c. Random sampling", side = 3, line = 1, adj = 0, font=1, cex=cex_titles)
+
+# Plot 4 -- regular sampling ####
+plot(mydata, col=adjustcolor("grey", alpha.f = .4), type="l", lwd=1.5, axes=F, xlab="",ylab="")
+axis(1, lwd=2, at = c(-10,120))
+axis(2, lwd=2, at = c(-1,2))
+cp_regular <- sample_regular(mydata, n=15, messages = F)
+points(cp_regular$matrix$index, cp_regular$matrix$x, pch=4, lwd=2)
+pol_break(cpt = cp, col=1)
+pol_break(cpt = cp_regular, col=2)
+lines(mydata, col="black", lwd=1.5)
+text(100,0.95,labels = paste0("n = ",cp_regular$final_n), pos = 2)
+mtext("d. Regular sampling", side = 3, line = 1, adj = 0, font=1, cex=cex_titles)
+
+# Plot 5 -- iterative sampling (1/3) ####
+plot(mydata, col=adjustcolor("grey", alpha.f = .4), type="l", lwd=1.5, axes=F, xlab="",ylab="")
+cp_iterative <- sample_regular(mydata, n=5, messages = F)
+pol_break(cpt = cp, col=1)
+pol_break(cpt = cp_iterative, col=2)
+lines(mydata, col="black", lwd=1.5)
+axis(1, lwd=2, at = c(-10,120))
+axis(2, lwd=2, at = c(-1,2))
+points(cp_iterative$matrix$index, cp_iterative$matrix$x, pch=4, lwd=2)
+text(100,0.95,labels = paste0("n = ",cp_iterative$final_n), pos = 2)
+mtext("e. Iterative sampling (initial)", side = 3, line = 1, adj = 0, font=1, cex=cex_titles)
+xleft_temp <- cp_iterative$matrix$index[which(cp_iterative$matrix$index==cp_iterative$changepoint)-1]-4 
+xright_temp <- cp_iterative$changepoint+4 
+par(xpd=T)
+rect(xleft = xleft_temp, xright = xright_temp, ybottom = -0.1, ytop = 1.1, lty = 2)
+text(xright_temp, 1, labels = "f", pos = 4)
+par(xpd=F)
+
+# Plot 6 -- iterative sampling (2/3) ####
+plot(mydata, col=adjustcolor("grey", alpha.f = .4), type="l", lwd=1.5, axes=F, xlab="",ylab="", xlim=c(xleft_temp,xright_temp))
+cp_iterative1 <- sample_regular(mydata, n=5, messages = F)
+cp_iterative2 <- sample_iterative(mydata, n=6, messages = F)
+cp_iterative3 <- sample_iterative(mydata, n=7, messages = F)
+cp_iterative4 <- sample_iterative(mydata, n=8, messages = F)
+axis(1, lwd=2, at = c(-10,120))
+axis(2, lwd=2, at = c(-1,2))
+mypal2 <- wes_palette("GrandBudapest2")
+mypal2 <- wes_palette("Zissou1", max(vr_out_order$count)+5,type = "continuous")
+mypal2[4] <- "#90b581"
+mypal2 <- mypal[c(1,3,4,7,9)]
+
+points(cp_iterative1$matrix$index, cp_iterative$matrix$x, col=grey(0.5), pch=4, lwd=2)
+points(cp_iterative2$matrix$index[!cp_iterative2$matrix$index%in%cp_iterative1$matrix$index], cp_iterative2$matrix$x[!cp_iterative2$matrix$index%in%cp_iterative1$matrix$index], 
+       col=mypal2[1], pch=4, lwd=2)
+points(cp_iterative3$matrix$index[!cp_iterative3$matrix$index%in%cp_iterative2$matrix$index], cp_iterative3$matrix$x[!cp_iterative3$matrix$index%in%cp_iterative2$matrix$index], 
+       col=mypal2[2], pch=4, lwd=2)
+points(cp_iterative4$matrix$index[!cp_iterative4$matrix$index%in%cp_iterative3$matrix$index], cp_iterative4$matrix$x[!cp_iterative4$matrix$index%in%cp_iterative3$matrix$index], 
+       col=mypal2[3], pch=4, lwd=2)
+legend("topright", legend = c("t=0", "t=1", "t=2", "t=3"),
+       col = c(grey(0.5), mypal2), pch=4, lwd=2, bty="n", lty=NA)
+mtext("f. Zoom from e\n(slowly adding samples)", side = 3, line = 1, adj = 0, font=1, cex=cex_titles)
+
+# Plot 7 -- iterative sampling (3/3) ####
+plot(mydata, col=adjustcolor("grey", alpha.f = .4), type="l", lwd=1.5, axes=F, xlab="",ylab="")
+cp_iterative <- sample_iterative(mydata, n=15, messages = F)
+pol_break(cpt = cp, col=1)
+pol_break(cpt = cp_iterative, col=2)
+lines(mydata, col="black", lwd=1.5)
+axis(1, lwd=2, at = c(-10,120))
+axis(2, lwd=2, at = c(-1,2))
+points(cp_iterative$matrix$index, cp_iterative$matrix$x, pch=4, lwd=2)
+text(100,0.95,labels = paste0("n = ",cp_iterative$final_n), pos = 2)
+mtext("g. Iterative sampling (final)", side = 3, line = 1, adj = 0, font=1, cex=cex_titles)
+
+
+```
+
+
+Another issue emerge in time series with no changepoint. The first case is when the time-series follows a declining trend. In some situations, depending on the noise and the trend, a changepoint will still be detected (Fig. \ref{fig:caution2}). Again, this would be the case even with a continuous sampling, but the iterative method can falsely reinfore this (by converging to a changepoint, and hiding the general trend). In this scenario, increasing the initial number of samples analyzed (~30% of the initial samples) would allow to roughly model the behavior of the dataset (Fig. \ref{fig:gamtrends}).
+
+Overall, while it is important for potential users to be aware of the behavior of the code, community changes would more often lead to larger restructurations (alternative stable states, @Bruel2018). We caution in general against using too few samples for a dataset or a type of data we know too little about.
+
+```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 7.2, fig.height= 6,fig.cap='Examples of two time-series where shift lasted over (a) 5 and (b) 10 observations. Building , off the example time-series in (b), we tested the three sampling method in (c-d). (c-d) are same as in Fig. 1 in the main manuscript. \\label{fig:caution2}'}
+
+par(mfrow=c(2,2))
+# Plot 1: no shift, declining trend ####
+ar1 <- -0.0001*x + 1 + rnorm(length(x),0,0.001)
+ar1 <- (ar1 - min(ar1))/(max(ar1) - min(ar1))
+mydata <- ar1
+
+plot(mydata, col="black", type="l", lwd=1.5, axes=F, xlab="",ylab="")
+axis(1, lwd=2, at = c(-10,120))
+axis(2, lwd=2, at = c(-1,2))
+cp <- sample_regular(mydata, n=length(mydata), messages = F)
+if(!is.na(cp$changepoint)) pol_break(cpt = cp)
+lines(mydata, col="black", lwd=1.5)
+if(!is.na(cp$changepoint)) {
+  text(cp$changepoint, .8, labels = "change point \ndetected",pos = 4, col=mypal[1])
+} else {
+    text(3,.95, labels = "No changepoint", adj = 0, col=mypal[1])
+  }
+mtext("a. Example time-series with no shift, only a declining trend. \nNo changepoint should have been detected.", side = 3, line = 1.5, adj = 0, font=1, cex=cex_titles)
+
+# Plot 2: no shift, trend, subsample ####
+plot(mydata, col=adjustcolor("grey", alpha.f = .4), type="l", lwd=1.5, axes=F, xlab="",ylab="")
+axis(1, lwd=2, at = c(-10,120))
+axis(2, lwd=2, at = c(-1,2))
+cp_regular <- sample_regular(mydata, n=15, messages = F)
+points(cp_regular$matrix$index, cp_regular$matrix$x, pch=4, lwd=2)
+#pol_break(cpt = cp, col=1)
+pol_break(cpt = cp_regular, col=2)
+text(100,0.95,labels = paste0("n = ",cp_regular$final_n), pos = 2)
+mtext("b. Subsampling a time-series with no shift and a trend. \nNo changepoint should have beend detected.", side = 3, line = 1.5, adj = 0, font=1, cex=cex_titles)
+
+# Plot 2: no shift, no trend ####
+ar1 <- -0.000001*x + 1 + rnorm(length(x),0,0.001)
+ar1 <- (ar1 - min(ar1))/(max(ar1) - min(ar1))
+mydata <- ar1
+
+plot(mydata, col="black", type="l", lwd=1.5, axes=F, xlab="",ylab="")
+axis(1, lwd=2, at = c(-10,120))
+axis(2, lwd=2, at = c(-1,2))
+cp <- sample_regular(mydata, n=length(mydata), messages = F)
+if(!is.na(cp$changepoint)) pol_break(cpt = cp)
+lines(mydata, col="black", lwd=1.5)
+if(!is.na(cp$changepoint)) {
+  text(cp$changepoint, .8, labels = "'real' \nchange point",pos = 4, col=mypal[1])
+} else {
+    text(3,.95, labels = "No changepoint", adj = 0, col=mypal[1])
+  }
+mtext("c. Example time-series with no shift and no trend.\nNo changepoint should have beend detected.", side = 3, line = 1.5, adj = 0, font=1, cex=cex_titles)
+
+
+
+plot(mydata, col=adjustcolor("grey", alpha.f = .4), type="l", lwd=1.5, axes=F, xlab="",ylab="")
+axis(1, lwd=2, at = c(-10,120))
+axis(2, lwd=2, at = c(-1,2))
+cp_regular <- sample_regular(mydata, n=15, messages = F)
+points(cp_regular$matrix$index, cp_regular$matrix$x, pch=4, lwd=2)
+pol_break(cpt = cp_regular, col=2)
+text(100,0.95,labels = paste0("n = ",cp_regular$final_n), pos = 2)
+mtext("d. Subsampling a time-series with no shift and no trend. \nNo changepoint detected.", side = 3, line = 1.5, adj = 0, font=1, cex=cex_titles)
+
+
+```
+
+
 
 \clearpage
 

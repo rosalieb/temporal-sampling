@@ -1,4 +1,4 @@
-R_U_KNITTING=T
+R_U_KNITTING=F
 
 source(paste0(getwd(),"/R/build_time_series.R"))
 source(paste0(getwd(),"/R/sampling_regular.R"))
@@ -7,6 +7,9 @@ source(paste0(getwd(),"/R/sampling_iterative.R"))
 
 library(wesanderson)
 mypal <- wes_palette("Chevalier1")
+mypal <- wes_palette("Zissou1", max(vr_out_order$count)+5,type = "continuous")
+mypal[4] <- "#90b581"
+mypal <- mypal[c(1,3,4,7,9)]
 
 ar1 <- build_time_series()
 mydata <- (ar1 - min(ar1))/(max(ar1) - min(ar1))
@@ -106,6 +109,10 @@ cp_iterative4 <- sample_iterative(mydata, n=8, messages = F)
 axis(1, lwd=2, at = c(-10,120))
 axis(2, lwd=2, at = c(-1,2))
 mypal2 <- wes_palette("GrandBudapest2")
+mypal2 <- wes_palette("Zissou1", max(vr_out_order$count)+5,type = "continuous")
+mypal2[4] <- "#90b581"
+mypal2 <- mypal[c(1,3,4,7,9)]
+
 points(cp_iterative1$matrix$index, cp_iterative$matrix$x, col=grey(0.5), pch=4, lwd=2)
 points(cp_iterative2$matrix$index[!cp_iterative2$matrix$index%in%cp_iterative1$matrix$index], cp_iterative2$matrix$x[!cp_iterative2$matrix$index%in%cp_iterative1$matrix$index], 
        col=mypal2[1], pch=4, lwd=2)
@@ -130,3 +137,4 @@ text(100,0.95,labels = paste0("n = ",cp_iterative$final_n), pos = 2)
 mtext("g. Iterative sampling (final)", side = 3, line = 1, adj = 0, font=1, cex=cex_titles)
 
 if(!R_U_KNITTING) dev.off()
+
