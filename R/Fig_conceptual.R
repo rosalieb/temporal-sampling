@@ -1,4 +1,4 @@
-R_U_KNITTING=F
+R_U_KNITTING=T
 
 source(paste0(getwd(),"/R/build_time_series.R"))
 source(paste0(getwd(),"/R/sampling_regular.R"))
@@ -7,7 +7,7 @@ source(paste0(getwd(),"/R/sampling_iterative.R"))
 
 library(wesanderson)
 mypal <- wes_palette("Chevalier1")
-mypal <- wes_palette("Zissou1", max(vr_out_order$count)+5,type = "continuous")
+mypal <- wes_palette("Zissou1", 10,type = "continuous")
 mypal[4] <- "#90b581"
 mypal <- mypal[c(1,3,4,7,9)]
 
@@ -109,7 +109,7 @@ cp_iterative4 <- sample_iterative(mydata, n=8, messages = F)
 axis(1, lwd=2, at = c(-10,120))
 axis(2, lwd=2, at = c(-1,2))
 mypal2 <- wes_palette("GrandBudapest2")
-mypal2 <- wes_palette("Zissou1", max(vr_out_order$count)+5,type = "continuous")
+mypal2 <- wes_palette("Zissou1", 10,type = "continuous")
 mypal2[4] <- "#90b581"
 mypal2 <- mypal[c(1,3,4,7,9)]
 
