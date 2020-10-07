@@ -676,7 +676,7 @@ mtext('Time (year)',side = 1,line = 2.5,outer = T,font = 2)
 
 # Word of caution
 
-The limits of our three sub-sampling functions are tied to the limits of the _e.divise()_ function. In a situation where the change is a linear change instead of a sudden changepoint, the function _e.divise()_ will find a changepoint in the middle of the linear decline (Fig. \ref{fig:caution1}). In such situation, iterative sampling still performs the best.
+The limits of our three sub-sampling functions are tied to the limits of the _e.divise()_ function [@James2014]. In a situation where the change is a linear change instead of a sudden changepoint, the function _e.divise()_ will find a changepoint in the middle of the linear decline (Fig. \ref{fig:caution1}). In such situation, iterative sampling still performs the best.
 
 ```{r echo=FALSE, eval=T,message=FALSE, warning=FALSE, fig.width = 6, fig.height= 8,fig.cap='Examples of two time-series where shift lasted over (a) 5 and (b) 10 observations. Building off the example time-series in (b), we tested the three sampling method in (c-d). (c-d) are same as in Fig. 1 in the main manuscript. \\label{fig:caution1}'}
 
@@ -888,7 +888,7 @@ mtext("d. Subsampling a time-series with no shift and no trend. \nNo changepoint
 
 ```
 
-
+Finally, note that the p-values in the output of each functions are calculated within the function _e.divisive()_ (package _ecp_, @James2014). By default, the p-value of 0.005 means that no other permutation within the matrix lead to more energy needed to break the matrix. The p-value is in fact a frequency: only one configuration in 200 scenarios (initial matrix and 199 permutations) led to that much energy (1/200 = 0.005). We included in the three functions we coded (*sampling_random(), sampling_regular(), sampling_iterative()*) the arguments _R_ (default = 199) and _sig.lvl_ (default = 0.005), two arguments within the initial _e.divisive()_ function. By changing the default value, the user can choose a different number of permutation (if R = 19, then the minimum p-value will be 1/(1+19) = 0.05), and another significance level (if R = 199, the default, and the user wants to stop looking for changepoints once 10 configurations result in higher energy, then sig.lvl must be changed to 10/(1+199) = 0.05). Refer to the initial function for better understanding [@James2014].
 
 \clearpage
 
